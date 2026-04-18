@@ -1,0 +1,25 @@
+{
+  "name": "campuscore",
+  "private": true,
+  "version": "0.1.0",
+  "description": "CampusCore — college management PWA",
+  "packageManager": "pnpm@10.8.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @campuscore/web dev",
+    "dev:api": "pnpm --dir apps/api run dev",
+    "build": "pnpm --filter @campuscore/web build",
+    "lint": "pnpm -r --parallel --if-present lint",
+    "typecheck": "pnpm -r --parallel --if-present typecheck",
+    "test": "pnpm -r --parallel --if-present test",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.8"
+  }
+}

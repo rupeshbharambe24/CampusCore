@@ -1,0 +1,65 @@
+# ---- OS ----
+.DS_Store
+Thumbs.db
+
+# ---- Editors ----
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# ---- Env ----
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ---- Node / Next.js ----
+node_modules/
+.pnpm-store/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# ---- Logs / caches ----
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.eslintcache
+.turbo/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.venv/
+venv/
+.python-version
+
+# ---- Testing ----
+coverage/
+playwright-report/
+test-results/
+/blob-report/
+
+# ---- Build artifacts ----
+*.log
+
+# ---- Secrets (defensive) ----
+*.pem
+*.key
+*.crt
+secrets/
