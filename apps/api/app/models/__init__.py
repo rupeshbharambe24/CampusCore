@@ -1,6 +1,19 @@
 """SQLAlchemy ORM models. Import models here so Alembic autogenerate picks them up."""
 
-from app.core.db import Base  # noqa: F401
+from app.core.db import Base
+from app.models.audit_log import AuditLog
+from app.models.branch import Branch
+from app.models.department import Department
+from app.models.enums import UserRole
+from app.models.user import Faculty, Student, User
 
-# Models are added in Phase 1+ and imported here, e.g.:
-# from app.models.user import User
+__all__ = [
+    "AuditLog",
+    "Base",
+    "Branch",
+    "Department",
+    "Faculty",
+    "Student",
+    "User",
+    "UserRole",
+]
