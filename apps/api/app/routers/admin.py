@@ -169,6 +169,13 @@ async def get_department(id: uuid.UUID, user: CurrentUser, db: DbSession) -> Any
 @router.delete("/departments/{id}", status_code=204)
 async def delete_department(id: uuid.UUID, user: CurrentUser, db: DbSession) -> None:
     _require_admin(user)
+    # Delete matching branch first (dept = branch, auto-created together)
+    from app.models import Branch as BranchModel
+
+    branch_result = await db.execute(select(BranchModel).where(BranchModel.department_id == id))
+    for branch in branch_result.scalars().all():
+        await db.delete(branch)
+    await db.flush()
     await _delete_entity(db, Department, id)
 
 
