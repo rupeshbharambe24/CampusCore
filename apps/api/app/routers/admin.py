@@ -169,11 +169,27 @@ async def get_department(id: uuid.UUID, user: CurrentUser, db: DbSession) -> Any
 @router.delete("/departments/{id}", status_code=204)
 async def delete_department(id: uuid.UUID, user: CurrentUser, db: DbSession) -> None:
     _require_admin(user)
-    # Delete matching branch first (dept = branch, auto-created together)
     from app.models import Branch as BranchModel
+    from app.models.user import Student
 
+    # Check if any students belong to branches in this department
     branch_result = await db.execute(select(BranchModel).where(BranchModel.department_id == id))
-    for branch in branch_result.scalars().all():
+    branches = list(branch_result.scalars().all())
+    branch_ids = [b.id for b in branches]
+
+    if branch_ids:
+        student_count_result = await db.execute(
+            select(func.count()).select_from(Student).where(Student.branch_id.in_(branch_ids))
+        )
+        student_count = student_count_result.scalar_one()
+        if student_count > 0:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT,
+                f"Cannot delete: {student_count} students belong to this department. Remove students first.",
+            )
+
+    # Delete branches first, then department
+    for branch in branches:
         await db.delete(branch)
     await db.flush()
     await _delete_entity(db, Department, id)

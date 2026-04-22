@@ -3,8 +3,9 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 
 from app.core.config import get_settings
 from app.routers import (
@@ -24,6 +25,38 @@ from app.routers import (
     timetable,
 )
 
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "*",
+    "Access-Control-Allow-Credentials": "true",
+    "Access-Control-Max-Age": "600",
+}
+
+
+class CORSErrorMiddleware(BaseHTTPMiddleware):
+    """Middleware that ensures CORS headers are on EVERY response, including 500s."""
+
+    async def dispatch(self, request: Request, call_next: object) -> Response:
+        # Handle preflight
+        if request.method == "OPTIONS":
+            return JSONResponse(content={}, headers=CORS_HEADERS)
+
+        try:
+            response: Response = await call_next(request)  # type: ignore[operator]
+        except Exception:
+            traceback.print_exc()
+            response = JSONResponse(
+                status_code=500,
+                content={"detail": "Internal server error"},
+            )
+
+        # Add CORS headers to every response
+        for key, value in CORS_HEADERS.items():
+            response.headers[key] = value
+
+        return response
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -42,22 +75,8 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
-    # Catch-all exception handler — ensures CORS headers are on error responses
-    @app.exception_handler(Exception)
-    async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-        traceback.print_exc()
-        return JSONResponse(
-            status_code=500,
-            content={"detail": str(exc) if settings.debug else "Internal server error"},
-        )
+    # Custom CORS middleware that handles errors properly
+    app.add_middleware(CORSErrorMiddleware)
 
     app.include_router(health.router, prefix="/api/v1")
     app.include_router(auth.router, prefix="/api/v1")
