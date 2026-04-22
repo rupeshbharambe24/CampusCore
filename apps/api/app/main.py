@@ -13,9 +13,11 @@ from app.routers import (
     admin,
     attendance,
     auth,
+    calendar,
     dashboard,
     dev,
     exam,
+    faculty_leave,
     fees,
     health,
     hod,
@@ -95,6 +97,8 @@ def create_app() -> FastAPI:
     app.include_router(materials.router, prefix="/api/v1")
     app.include_router(submissions.router, prefix="/api/v1")
     app.include_router(reeval.router, prefix="/api/v1")
+    app.include_router(calendar.router, prefix="/api/v1")
+    app.include_router(faculty_leave.router, prefix="/api/v1")
     app.include_router(lookups.router, prefix="/api/v1")
     app.include_router(dashboard.router, prefix="/api/v1")
 

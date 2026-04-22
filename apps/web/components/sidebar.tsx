@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
+  AlertTriangle,
   BookOpen,
   Calendar,
   CheckSquare,
@@ -45,7 +46,9 @@ const studentNav: NavItem[] = [
   { label: 'Study Materials', href: '/student/materials', icon: BookOpen },
   { label: 'Submissions', href: '/student/submissions', icon: FileCheck },
   { label: 'Fees & Payments', href: '/student/fees', icon: IndianRupee },
+  { label: 'All Results', href: '/student/results', icon: Trophy },
   { label: 'Re-evaluation', href: '/student/reeval', icon: RefreshCw },
+  { label: 'Calendar', href: '/student/calendar', icon: Calendar },
   { label: 'Leave Applications', href: '/student/leaves', icon: FileText },
   { label: 'Notifications', href: '/student/notifications', icon: Bell },
   { label: 'Profile', href: '/student/profile', icon: User },
@@ -58,13 +61,16 @@ const facultyNav: NavItem[] = [
   { label: 'Study Materials', href: '/faculty/materials', icon: BookOpen },
   { label: 'Assignments', href: '/faculty/assignments', icon: FileCheck },
   { label: 'Activity Approvals', href: '/faculty/approvals', icon: ClipboardList },
+  { label: 'My Leaves', href: '/faculty/my-leaves', icon: FileText },
   { label: 'Notifications', href: '/faculty/notifications', icon: Bell },
   { label: 'Profile', href: '/faculty/profile', icon: User },
 ];
 
 const hodNav: NavItem[] = [
   { label: 'Dashboard', href: '/faculty', icon: Home },
-  { label: 'Leave Approvals', href: '/faculty/leaves', icon: FileText },
+  { label: 'Student Leaves', href: '/faculty/leaves', icon: FileText },
+  { label: 'Faculty Leaves', href: '/faculty/faculty-leaves', icon: FileText },
+  { label: 'Defaulters', href: '/faculty/defaulters', icon: AlertTriangle },
   { label: 'Dept Faculty', href: '/faculty/dept-faculty', icon: Users },
   { label: 'Faculty Workload', href: '/faculty/workload', icon: BarChart3 },
   { label: 'Dept Students', href: '/faculty/dept-students', icon: GraduationCap },
@@ -73,6 +79,7 @@ const hodNav: NavItem[] = [
   { label: 'Study Materials', href: '/faculty/materials', icon: BookOpen },
   { label: 'Assignments', href: '/faculty/assignments', icon: FileCheck },
   { label: 'Activity Approvals', href: '/faculty/approvals', icon: ClipboardList },
+  { label: 'My Leaves', href: '/faculty/my-leaves', icon: FileText },
   { label: 'Notifications', href: '/faculty/notifications', icon: Bell },
   { label: 'Profile', href: '/faculty/profile', icon: User },
 ];

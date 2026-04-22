@@ -16,9 +16,11 @@ from app.models.activity_attendance import ActivityAttendanceRequest
 from app.models.attendance import AttendanceRecord
 from app.models.audit_log import AuditLog
 from app.models.branch import Branch
+from app.models.calendar import CalendarEvent
 from app.models.department import Department
 from app.models.enums import UserRole
 from app.models.exam import Exam, ExamResult, ExamSchedule, SeatingArrangement
+from app.models.faculty_leave import FacultyLeave
 from app.models.fees import FeeReceipt, FeeRecord, FeeStructure
 from app.models.leave import LeaveApplication
 from app.models.notification import Notification, PushSubscription
@@ -38,11 +40,13 @@ __all__ = [
     "AuditLog",
     "Base",
     "Branch",
+    "CalendarEvent",
     "Department",
     "Exam",
     "ExamResult",
     "ExamSchedule",
     "Faculty",
+    "FacultyLeave",
     "FacultySubjectAssignment",
     "FeeReceipt",
     "FeeRecord",
