@@ -25,7 +25,9 @@ export interface MeResponse {
     roll_number: string;
     branch_id: string;
     admission_year: number;
+    current_section_id: string | null;
     lab_batch: string | null;
+    prn: string | null;
   } | null;
   faculty: {
     employee_id: string;

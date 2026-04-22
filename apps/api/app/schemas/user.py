@@ -28,8 +28,10 @@ class UserRead(UserBase):
 
 class StudentProfile(BaseModel):
     roll_number: str
+    prn: str | None = None
     branch_id: uuid.UUID
     admission_year: int
+    current_section_id: uuid.UUID | None = None
     lab_batch: str | None = None
 
     model_config = {"from_attributes": True}
