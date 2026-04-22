@@ -1,117 +1,213 @@
 'use client';
 
-import { motion } from '@/components/motion';
-import { useMe } from '@/lib/hooks';
-import { User, Mail, Hash, BookOpen, Calendar, Shield, Loader2 } from 'lucide-react';
+import { motion, StaggerList, StaggerItem } from '@/components/motion';
+import { AttendanceRing } from '@/components/attendance-ring';
+import {
+  User, Mail, Hash, BookOpen, Calendar, Shield, Loader2,
+  Phone, GraduationCap, Clock, CheckSquare, IndianRupee,
+  Trophy, FileCheck, MapPin,
+} from 'lucide-react';
 import Link from 'next/link';
+import { useMe, useAttendanceSummary, useAttendanceBySubject, useActivityRequests } from '@/lib/hooks';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api';
+import { cn } from '@/lib/utils';
+
+interface FeeSummary {
+  total_fees: number;
+  total_paid: number;
+  total_pending: number;
+}
 
 export default function ProfilePage() {
   const { data, isLoading } = useMe();
+  const { data: attendance } = useAttendanceSummary();
+  const { data: subjects } = useAttendanceBySubject();
+  const { data: activities } = useActivityRequests();
+  const { data: fees } = useQuery({
+    queryKey: ['student', 'fees-summary'],
+    queryFn: () => api.get<FeeSummary>('/students/me/fees'),
+    retry: false,
+  });
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
   const user = data?.user;
   const student = data?.student;
+  const overallPct = attendance?.overall_percentage ?? 0;
+  const lectureOnlyPct = attendance?.lecture_only_percentage ?? 0;
 
   return (
     <div className="space-y-6">
-      <motion.h1
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        className="text-2xl font-bold tracking-tight"
-      >
+      <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-2xl font-bold tracking-tight">
         <User className="mr-2 inline-block h-6 w-6 text-primary" />
-        Profile
+        My Profile
       </motion.h1>
 
+      {/* Hero card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-xl border border-border bg-card p-6 shadow-sm"
+        className="rounded-xl border border-border bg-gradient-to-br from-primary/5 to-primary/10 p-6 shadow-sm"
       >
-        {/* Avatar + Name */}
-        <div className="flex items-center gap-4">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary text-3xl font-bold">
+        <div className="flex flex-col sm:flex-row items-center gap-6">
+          {/* Avatar */}
+          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-primary text-primary-foreground text-4xl font-bold shadow-lg shadow-primary/20">
             {user?.full_name?.charAt(0).toUpperCase() ?? '?'}
           </div>
-          <div>
-            <h2 className="text-xl font-bold">{user?.full_name}</h2>
-            <p className="text-sm text-muted-foreground capitalize">{user?.role}</p>
-          </div>
-        </div>
 
-        {/* Details grid */}
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <div className="flex items-center gap-3 rounded-lg border border-border p-3">
-            <Mail className="h-5 w-5 text-muted-foreground" />
-            <div>
-              <p className="text-xs text-muted-foreground">Email</p>
-              <p className="text-sm font-medium">{user?.email}</p>
-            </div>
+          {/* Name + role */}
+          <div className="text-center sm:text-left flex-1">
+            <h2 className="text-2xl font-bold">{user?.full_name}</h2>
+            <p className="text-sm text-muted-foreground capitalize">{user?.role} · AI & Data Science</p>
+            {student && (
+              <p className="mt-1 text-sm font-mono text-primary">{student.roll_number}</p>
+            )}
           </div>
 
-          {student && (
-            <>
-              <div className="flex items-center gap-3 rounded-lg border border-border p-3">
-                <Hash className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Roll Number</p>
-                  <p className="text-sm font-medium">{student.roll_number}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 rounded-lg border border-border p-3">
-                <BookOpen className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Branch</p>
-                  <p className="text-sm font-medium">{student.branch_id}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 rounded-lg border border-border p-3">
-                <Calendar className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Admission Year</p>
-                  <p className="text-sm font-medium">{student.admission_year}</p>
-                </div>
-              </div>
-              {student.lab_batch && (
-                <div className="flex items-center gap-3 rounded-lg border border-border p-3">
-                  <Shield className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Lab Batch</p>
-                    <p className="text-sm font-medium">{student.lab_batch}</p>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          <div className="flex items-center gap-3 rounded-lg border border-border p-3">
-            <Calendar className="h-5 w-5 text-muted-foreground" />
-            <div>
-              <p className="text-xs text-muted-foreground">Member Since</p>
-              <p className="text-sm font-medium">
-                {user?.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="mt-6 flex gap-3">
-          <Link
-            href="/change-password"
-            className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-accent"
-          >
-            Change Password
-          </Link>
+          {/* Attendance ring */}
+          <AttendanceRing percentage={overallPct} size={100} strokeWidth={8} label="Attendance" delay={0.3} />
         </div>
       </motion.div>
+
+      {/* Personal details */}
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <InfoItem icon={Mail} label="Email" value={user?.email ?? '—'} />
+          <InfoItem icon={Phone} label="Phone" value={user?.phone ?? 'Not added'} />
+          <InfoItem icon={Hash} label="Roll Number" value={student?.roll_number ?? '—'} />
+          <InfoItem icon={BookOpen} label="Branch" value="AI & Data Science" />
+          <InfoItem icon={GraduationCap} label="Admission Year" value={String(student?.admission_year ?? '—')} />
+          <InfoItem icon={Calendar} label="Current Year" value={student ? `Year ${new Date().getFullYear() - student.admission_year + 1}` : '—'} />
+          <InfoItem icon={Shield} label="Lab Batch" value={student?.lab_batch ?? '—'} />
+          <InfoItem icon={MapPin} label="Section" value="—" />
+          <InfoItem icon={Clock} label="Member Since" value={user?.created_at ? new Date(user.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'} />
+        </div>
+      </motion.div>
+
+      {/* Academic overview */}
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <h3 className="text-lg font-semibold mb-4">Academic Overview</h3>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Attendance */}
+          <div className="rounded-lg border border-border p-4 text-center">
+            <CheckSquare className="mx-auto h-6 w-6 text-primary mb-2" />
+            <p className="text-2xl font-bold">{overallPct}%</p>
+            <p className="text-xs text-muted-foreground">Overall Attendance</p>
+            <p className="text-xs text-muted-foreground mt-1">Lecture only: {lectureOnlyPct}%</p>
+          </div>
+
+          {/* Subjects below 75 */}
+          <div className="rounded-lg border border-border p-4 text-center">
+            <BookOpen className="mx-auto h-6 w-6 text-warning mb-2" />
+            <p className="text-2xl font-bold">{attendance?.subjects_below_75_count ?? 0}</p>
+            <p className="text-xs text-muted-foreground">Subjects Below 75%</p>
+            {attendance?.subjects_below_75 && attendance.subjects_below_75.length > 0 && (
+              <p className="text-xs text-warning mt-1">{attendance.subjects_below_75.join(', ')}</p>
+            )}
+          </div>
+
+          {/* Fees */}
+          <div className="rounded-lg border border-border p-4 text-center">
+            <IndianRupee className="mx-auto h-6 w-6 text-success mb-2" />
+            <p className="text-2xl font-bold">₹{(fees?.total_paid ?? 0).toLocaleString('en-IN')}</p>
+            <p className="text-xs text-muted-foreground">Fees Paid</p>
+            {fees && fees.total_pending > 0 && (
+              <p className="text-xs text-warning mt-1">₹{fees.total_pending.toLocaleString('en-IN')} pending</p>
+            )}
+          </div>
+
+          {/* Activities */}
+          <div className="rounded-lg border border-border p-4 text-center">
+            <Trophy className="mx-auto h-6 w-6 text-info mb-2" />
+            <p className="text-2xl font-bold">{activities?.length ?? 0}</p>
+            <p className="text-xs text-muted-foreground">Activity Requests</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {activities?.filter((a) => a.status === 'approved').length ?? 0} approved
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Subject-wise attendance */}
+      {subjects && subjects.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="rounded-xl border border-border bg-card p-6 shadow-sm">
+          <h3 className="text-lg font-semibold mb-4">Subject-wise Attendance</h3>
+          <div className="overflow-hidden rounded-lg border border-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="px-4 py-2.5 text-left font-semibold text-muted-foreground">Subject</th>
+                  <th className="px-4 py-2.5 text-center font-semibold text-muted-foreground">Present</th>
+                  <th className="px-4 py-2.5 text-center font-semibold text-muted-foreground">Total</th>
+                  <th className="px-4 py-2.5 text-right font-semibold text-muted-foreground">%</th>
+                </tr>
+              </thead>
+              <tbody>
+                {subjects.map((s, i) => (
+                  <motion.tr
+                    key={s.subject_id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 + i * 0.03 }}
+                    className="border-b last:border-0 hover:bg-accent/50 transition-colors"
+                  >
+                    <td className="px-4 py-2.5">
+                      <p className="font-medium">{s.subject_code}</p>
+                      <p className="text-xs text-muted-foreground">{s.subject_name}</p>
+                    </td>
+                    <td className="px-4 py-2.5 text-center">{s.present + s.activity}</td>
+                    <td className="px-4 py-2.5 text-center">{s.total}</td>
+                    <td className="px-4 py-2.5 text-right">
+                      <span className={cn(
+                        'font-bold tabular-nums',
+                        s.percentage >= 75 ? 'text-success' : s.percentage >= 50 ? 'text-warning' : 'text-destructive',
+                      )}>
+                        {s.percentage}%
+                      </span>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Quick links */}
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <QuickLink href="/student/attendance" icon={CheckSquare} label="Detailed Attendance" />
+        <QuickLink href="/student/fees" icon={IndianRupee} label="Fee Details" />
+        <QuickLink href="/student/exams" icon={FileCheck} label="Exam Results" />
+        <QuickLink href="/change-password" icon={Shield} label="Change Password" />
+      </motion.div>
     </div>
+  );
+}
+
+function InfoItem({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-border p-3">
+      <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
+      <div className="min-w-0">
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="text-sm font-medium truncate">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function QuickLink({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) {
+  return (
+    <Link href={href as '/'} className="group">
+      <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-all group-hover:border-primary/30 group-hover:shadow-md">
+        <Icon className="h-5 w-5 text-primary" />
+        <span className="text-sm font-medium">{label}</span>
+      </div>
+    </Link>
   );
 }
