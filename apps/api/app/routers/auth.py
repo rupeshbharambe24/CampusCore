@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import select
 
+from app.core.config import get_settings
 from app.core.db import DbSession
 from app.core.security import CurrentUser, create_access_token, hash_password, verify_password
 from app.models.user import User
@@ -47,7 +48,7 @@ async def login(body: LoginRequest, db: DbSession) -> LoginResponse:
     user.last_login_at = datetime.now(UTC)
     await db.commit()
 
-    token = create_access_token(user.id)
+    token = create_access_token(user.id, get_settings())
     return LoginResponse(access_token=token)
 
 
