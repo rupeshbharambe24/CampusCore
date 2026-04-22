@@ -1,41 +1,12 @@
 'use client';
 
 import { motion, StaggerList, StaggerItem } from '@/components/motion';
-import { Calendar, Clock, MapPin, User } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import { useStudentTimetable, type TimetableEntry } from '@/lib/hooks';
 
 const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-const timetableData: Record<string, { time: string; subject: string; code: string; faculty: string; room: string; type: string }[]> = {
-  Mon: [
-    { time: '09:00', subject: 'Data Structures', code: 'CS301', faculty: 'Dr. Sharma', room: 'LT-1', type: 'lecture' },
-    { time: '10:00', subject: 'Digital Electronics', code: 'EC302', faculty: 'Prof. Patel', room: 'LT-3', type: 'lecture' },
-    { time: '11:00', subject: 'Mathematics III', code: 'MA303', faculty: 'Dr. Gupta', room: 'LT-1', type: 'lecture' },
-    { time: '14:00', subject: 'DS Lab', code: 'CS391', faculty: 'Dr. Sharma', room: 'Lab-201', type: 'lab' },
-  ],
-  Tue: [
-    { time: '09:00', subject: 'Mathematics III', code: 'MA303', faculty: 'Dr. Gupta', room: 'LT-2', type: 'lecture' },
-    { time: '10:00', subject: 'Aptitude', code: 'APT301', faculty: 'Prof. Singh', room: 'LT-5', type: 'aptitude' },
-    { time: '11:00', subject: 'Data Structures', code: 'CS301', faculty: 'Dr. Sharma', room: 'LT-1', type: 'lecture' },
-  ],
-  Wed: [
-    { time: '09:00', subject: 'Digital Electronics', code: 'EC302', faculty: 'Prof. Patel', room: 'LT-3', type: 'lecture' },
-    { time: '10:00', subject: 'Data Structures', code: 'CS301', faculty: 'Dr. Sharma', room: 'LT-1', type: 'lecture' },
-    { time: '14:00', subject: 'DE Lab', code: 'EC392', faculty: 'Prof. Patel', room: 'Lab-105', type: 'lab' },
-  ],
-  Thu: [
-    { time: '09:00', subject: 'Mathematics III', code: 'MA303', faculty: 'Dr. Gupta', room: 'LT-1', type: 'lecture' },
-    { time: '10:00', subject: 'Digital Electronics', code: 'EC302', faculty: 'Prof. Patel', room: 'LT-3', type: 'lecture' },
-    { time: '11:00', subject: 'Data Structures', code: 'CS301', faculty: 'Dr. Sharma', room: 'LT-1', type: 'lecture' },
-  ],
-  Fri: [
-    { time: '09:00', subject: 'Aptitude', code: 'APT301', faculty: 'Prof. Singh', room: 'LT-5', type: 'aptitude' },
-    { time: '10:00', subject: 'Mathematics III', code: 'MA303', faculty: 'Dr. Gupta', room: 'LT-2', type: 'lecture' },
-    { time: '14:00', subject: 'DS Lab', code: 'CS391', faculty: 'Dr. Sharma', room: 'Lab-201', type: 'lab' },
-  ],
-  Sat: [],
-};
 
 const typeColors: Record<string, string> = {
   lecture: 'border-l-primary',
@@ -45,20 +16,25 @@ const typeColors: Record<string, string> = {
 };
 
 export default function TimetablePage() {
-  const today = new Date().getDay(); // 0=Sun, 1=Mon
-  const todayIdx = today === 0 ? 5 : today - 1; // Map to our 0=Mon index
+  const today = new Date().getDay();
+  const todayIdx = today === 0 ? 5 : today - 1;
   const [selectedDay, setSelectedDay] = useState(todayIdx);
 
-  const dayName = days[selectedDay] ?? 'Mon';
-  const classes = timetableData[dayName] ?? [];
+  const { data: timetable, isLoading } = useStudentTimetable();
+
+  // Group by day_of_week
+  const byDay: Record<number, TimetableEntry[]> = {};
+  timetable?.forEach((entry) => {
+    const d = entry.day_of_week;
+    if (!byDay[d]) byDay[d] = [];
+    byDay[d]!.push(entry);
+  });
+
+  const classes = (byDay[selectedDay] ?? []).sort((a, b) => a.start_time.localeCompare(b.start_time));
 
   return (
     <div className="space-y-6">
-      <motion.h1
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        className="text-2xl font-bold tracking-tight"
-      >
+      <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-2xl font-bold tracking-tight">
         <Calendar className="mr-2 inline-block h-6 w-6 text-primary" />
         Weekly Timetable
       </motion.h1>
@@ -81,62 +57,48 @@ export default function TimetablePage() {
             )}
           >
             {day}
-            {i === todayIdx && (
-              <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-primary" />
-            )}
+            {i === todayIdx && <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-primary" />}
           </motion.button>
         ))}
       </div>
 
       {/* Classes */}
-      {classes.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="rounded-xl border border-dashed border-border bg-card p-12 text-center"
-        >
+      {isLoading ? (
+        <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+      ) : classes.length === 0 ? (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl border border-dashed border-border bg-card p-12 text-center">
           <Calendar className="mx-auto h-10 w-10 text-muted-foreground/50" />
           <p className="mt-3 text-lg font-medium text-muted-foreground">No classes</p>
-          <p className="text-sm text-muted-foreground/70">Enjoy your day off!</p>
+          <p className="text-sm text-muted-foreground/70">
+            {timetable?.length ? 'No classes scheduled for this day' : 'Your section timetable has not been set up yet'}
+          </p>
         </motion.div>
       ) : (
         <StaggerList className="space-y-3">
           {classes.map((cls) => (
-            <StaggerItem key={cls.time + cls.code}>
-              <div
-                className={cn(
-                  'rounded-xl border border-border bg-card p-4 border-l-4 transition-all hover:shadow-md',
-                  typeColors[cls.type] ?? 'border-l-primary',
-                )}
-              >
+            <StaggerItem key={cls.period_id + cls.start_time}>
+              <div className={cn(
+                'rounded-xl border border-border bg-card p-4 border-l-4 transition-all hover:shadow-md',
+                typeColors[cls.period_type] ?? 'border-l-primary',
+              )}>
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
-                    <h3 className="font-semibold">{cls.subject}</h3>
-                    <p className="text-sm text-muted-foreground">{cls.code}</p>
+                    <h3 className="font-semibold">{cls.subject_name}</h3>
+                    <p className="text-sm text-muted-foreground">{cls.subject_code}</p>
                   </div>
-                  <span
-                    className={cn(
-                      'rounded-full px-2.5 py-0.5 text-xs font-medium capitalize',
-                      cls.type === 'lab'
-                        ? 'bg-info/10 text-info'
-                        : cls.type === 'aptitude'
-                          ? 'bg-warning/10 text-warning'
-                          : 'bg-primary/10 text-primary',
-                    )}
-                  >
-                    {cls.type}
+                  <span className={cn(
+                    'rounded-full px-2.5 py-0.5 text-xs font-medium capitalize',
+                    cls.period_type === 'lab' ? 'bg-info/10 text-info'
+                      : cls.period_type === 'aptitude' ? 'bg-warning/10 text-warning'
+                        : 'bg-primary/10 text-primary',
+                  )}>
+                    {cls.period_type}
                   </span>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5" /> {cls.time}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <User className="h-3.5 w-3.5" /> {cls.faculty}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5" /> {cls.room}
-                  </span>
+                  <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> {cls.start_time} - {cls.end_time}</span>
+                  <span className="flex items-center gap-1.5"><User className="h-3.5 w-3.5" /> {cls.faculty_name}</span>
+                  {cls.room_name && <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {cls.room_name}</span>}
                 </div>
               </div>
             </StaggerItem>
@@ -144,20 +106,11 @@ export default function TimetablePage() {
         </StaggerList>
       )}
 
-      {/* Legend */}
       <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-full bg-primary" /> Lecture
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-full bg-info" /> Lab
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-full bg-warning" /> Aptitude
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-full bg-success" /> Tutorial
-        </span>
+        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-full bg-primary" /> Lecture</span>
+        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-full bg-info" /> Lab</span>
+        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-full bg-warning" /> Aptitude</span>
+        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-full bg-success" /> Tutorial</span>
       </div>
     </div>
   );

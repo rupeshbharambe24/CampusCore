@@ -2,9 +2,10 @@
 
 import { motion, StaggerList, StaggerItem } from '@/components/motion';
 import { AttendanceRing } from '@/components/attendance-ring';
-import { CheckSquare, Loader2 } from 'lucide-react';
+import { CheckSquare, ChevronRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAttendanceSummary, useAttendanceBySubject } from '@/lib/hooks';
+import Link from 'next/link';
 
 export default function AttendancePage() {
   const { data: summary, isLoading: loadingSummary } = useAttendanceSummary();
@@ -86,7 +87,8 @@ export default function AttendancePage() {
         <StaggerList className="space-y-4">
           {subjects.map((subj, i) => (
             <StaggerItem key={subj.subject_id}>
-              <div className="rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md">
+              <Link href={`/student/attendance/${subj.subject_id}` as '/'}>
+              <div className="rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md cursor-pointer group">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-semibold">{subj.subject_name}</h3>
@@ -119,8 +121,12 @@ export default function AttendancePage() {
                     <span>Activity: <strong className="text-info">{subj.activity}</strong></span>
                   )}
                   <span>Absent: <strong className="text-destructive">{subj.absent}</strong></span>
+                  <span className="ml-auto flex items-center gap-1 text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                    View history <ChevronRight className="h-3 w-3" />
+                  </span>
                 </div>
               </div>
+              </Link>
             </StaggerItem>
           ))}
         </StaggerList>

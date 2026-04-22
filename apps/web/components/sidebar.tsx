@@ -19,6 +19,7 @@ import {
   Bell,
   BarChart3,
   Building2,
+  ScrollText,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
@@ -55,6 +56,7 @@ const adminNav: NavItem[] = [
   { label: 'Timetable', href: '/admin/timetable', icon: Calendar },
   { label: 'Reports', href: '/admin/reports', icon: BarChart3 },
   { label: 'Users', href: '/admin/users', icon: Users },
+  { label: 'Audit Log', href: '/admin/audit-log', icon: ScrollText },
   { label: 'Notifications', href: '/admin/notifications', icon: Bell },
 ];
 
