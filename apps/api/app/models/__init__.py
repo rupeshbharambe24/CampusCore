@@ -12,6 +12,7 @@ from app.models.academic import (
     TimetableSlot,
 )
 from app.models.activity import Activity, ActivityMembership
+from app.models.attendance import AttendanceRecord
 from app.models.audit_log import AuditLog
 from app.models.branch import Branch
 from app.models.department import Department
@@ -23,6 +24,7 @@ __all__ = [
     "AcademicYear",
     "Activity",
     "ActivityMembership",
+    "AttendanceRecord",
     "AuditLog",
     "Base",
     "Branch",
