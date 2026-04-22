@@ -22,6 +22,7 @@ from app.routers import (
     lookups,
     materials,
     me,
+    reeval,
     reports,
     submissions,
     timetable,
@@ -93,6 +94,7 @@ def create_app() -> FastAPI:
     app.include_router(fees.router, prefix="/api/v1")
     app.include_router(materials.router, prefix="/api/v1")
     app.include_router(submissions.router, prefix="/api/v1")
+    app.include_router(reeval.router, prefix="/api/v1")
     app.include_router(lookups.router, prefix="/api/v1")
     app.include_router(dashboard.router, prefix="/api/v1")
 

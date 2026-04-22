@@ -28,6 +28,14 @@ export interface MeResponse {
     current_section_id: string | null;
     lab_batch: string | null;
     prn: string | null;
+    guardian_name: string | null;
+    guardian_phone: string | null;
+    guardian_relation: string | null;
+    address: string | null;
+    blood_group: string | null;
+    date_of_birth: string | null;
+    gender: string | null;
+    category: string | null;
   } | null;
   faculty: {
     employee_id: string;

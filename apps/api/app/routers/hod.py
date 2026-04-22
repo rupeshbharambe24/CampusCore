@@ -127,6 +127,66 @@ async def hod_overview(user: CurrentUser, db: DbSession) -> Any:
 
 
 # ---------------------------------------------------------------------------
+# Faculty workload
+# ---------------------------------------------------------------------------
+
+
+class FacultyWorkloadItem(BaseModel):
+    user_id: str
+    full_name: str
+    employee_id: str
+    designation: str | None
+    lectures_per_week: int
+    labs_per_week: int
+    tutorials_per_week: int
+    total_periods: int
+
+
+@router.get("/workload", response_model=list[FacultyWorkloadItem])
+async def hod_faculty_workload(user: CurrentUser, db: DbSession) -> Any:
+    dept_id = await _get_hod_dept(user, db)
+
+    from app.models.timetable import Period
+
+    # Get all faculty in dept
+    fac_result = await db.execute(
+        select(Faculty, User)
+        .join(User, Faculty.user_id == User.id)
+        .where(Faculty.department_id == dept_id)
+        .order_by(User.full_name)
+    )
+
+    items = []
+    for f, u in fac_result.all():
+        # Count periods by type for this faculty (only active ones)
+        period_result = await db.execute(
+            select(Period.period_type, func.count().label("cnt"))
+            .where(Period.faculty_id == f.user_id, Period.valid_to.is_(None))
+            .group_by(Period.period_type)
+        )
+        counts: dict[str, int] = {r.period_type: r.cnt for r in period_result.all()}
+
+        lectures = counts.get("lecture", 0) + counts.get("aptitude", 0)
+        labs = counts.get("lab", 0)
+        tutorials = counts.get("tutorial", 0)
+
+        items.append(
+            FacultyWorkloadItem(
+                user_id=str(f.user_id),
+                full_name=u.full_name,
+                employee_id=f.employee_id,
+                designation=f.designation,
+                lectures_per_week=lectures,
+                labs_per_week=labs,
+                tutorials_per_week=tutorials,
+                total_periods=lectures + labs + tutorials,
+            )
+        )
+
+    return sorted(items, key=lambda x: x.total_periods, reverse=True)
+
+
+# ---------------------------------------------------------------------------
 # Department faculty list
 # ---------------------------------------------------------------------------
 

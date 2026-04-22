@@ -88,7 +88,21 @@ export default function ProfilePage() {
           <InfoItem icon={Calendar} label="Current Year" value={student ? `Year ${new Date().getFullYear() - student.admission_year + 1}` : '—'} />
           <InfoItem icon={Shield} label="Lab Batch" value={student?.lab_batch ?? '—'} />
           <InfoItem icon={MapPin} label="Section" value={student?.current_section_id ? 'Assigned' : 'Not assigned'} />
-          <InfoItem icon={Clock} label="Member Since" value={user?.created_at ? new Date(user.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'} />
+          <InfoItem icon={User} label="Gender" value={student?.gender ?? '—'} />
+          <InfoItem icon={Calendar} label="Date of Birth" value={student?.date_of_birth ?? '—'} />
+          <InfoItem icon={Shield} label="Blood Group" value={student?.blood_group ?? '—'} />
+          <InfoItem icon={Shield} label="Category" value={student?.category ?? '—'} />
+        </div>
+      </motion.div>
+
+      {/* Guardian details */}
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <h3 className="text-lg font-semibold mb-4">Guardian / Parent Details</h3>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <InfoItem icon={User} label="Guardian Name" value={student?.guardian_name ?? 'Not added'} />
+          <InfoItem icon={Phone} label="Guardian Phone" value={student?.guardian_phone ?? 'Not added'} />
+          <InfoItem icon={User} label="Relation" value={student?.guardian_relation ?? '—'} />
+          <InfoItem icon={MapPin} label="Address" value={student?.address ?? 'Not added'} />
         </div>
       </motion.div>
 

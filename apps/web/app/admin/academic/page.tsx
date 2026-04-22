@@ -26,7 +26,7 @@ const tabColumns: Record<string, string[]> = {
   departments: ['code', 'name'],
   sections: ['name', 'year_of_study', 'lab_batch_count'],
   subjects: ['code', 'name', 'credits', 'kind'],
-  rooms: ['building', 'name', 'capacity'],
+  rooms: ['name', 'building', 'floor', 'room_type', 'benches', 'capacity', 'pc_count'],
   activities: ['name', 'kind', 'is_active'],
 };
 
@@ -55,8 +55,13 @@ const tabFields: Record<string, { name: string; type: string; placeholder: strin
   ],
   rooms: [
     { name: 'building', type: 'select', placeholder: 'A', required: true, label: 'Building', options: ['A', 'B'] },
-    { name: 'name', type: 'text', placeholder: 'A101', required: true, label: 'Room Number (e.g. A101, B203)' },
-    { name: 'capacity', type: 'number', placeholder: '80', label: 'Normal Capacity (2/bench)' },
+    { name: 'name', type: 'text', placeholder: 'A101', required: true, label: 'Room Number' },
+    { name: 'floor', type: 'number', placeholder: '1', label: 'Floor' },
+    { name: 'room_type', type: 'select', placeholder: 'classroom', label: 'Type', options: ['classroom', 'smart_classroom', 'lab', 'auditorium'] },
+    { name: 'benches', type: 'number', placeholder: '40', label: 'Benches' },
+    { name: 'capacity', type: 'number', placeholder: '80', label: 'Capacity (2/bench)' },
+    { name: 'exam_capacity', type: 'number', placeholder: '40', label: 'Exam Capacity (1/bench)' },
+    { name: 'pc_count', type: 'number', placeholder: '30', label: 'PCs (labs only)' },
   ],
   activities: [
     { name: 'name', type: 'text', placeholder: 'Baja SAE', required: true, label: 'Activity Name' },

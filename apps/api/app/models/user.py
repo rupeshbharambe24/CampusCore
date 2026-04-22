@@ -75,6 +75,20 @@ class Student(TimestampMixin, Base):
     )
     lab_batch: Mapped[str | None] = mapped_column(String(8), nullable=True)
 
+    # Personal details
+    guardian_name: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    guardian_phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    guardian_relation: Mapped[str | None] = mapped_column(
+        String(32), nullable=True
+    )  # Father, Mother, Guardian
+    address: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    blood_group: Mapped[str | None] = mapped_column(String(8), nullable=True)  # A+, B-, O+, etc
+    date_of_birth: Mapped[str | None] = mapped_column(String(10), nullable=True)  # YYYY-MM-DD
+    gender: Mapped[str | None] = mapped_column(String(16), nullable=True)  # Male, Female, Other
+    category: Mapped[str | None] = mapped_column(
+        String(32), nullable=True
+    )  # Open, OBC, SC, ST, NT, etc
+
     __table_args__ = (UniqueConstraint("roll_number", name="uq_students_roll_number"),)
 
 

@@ -177,14 +177,9 @@ class FacultySubjectAssignment(UUIDPkMixin, TimestampMixin, Base):
 class Room(UUIDPkMixin, TimestampMixin, Base):
     __tablename__ = "rooms"
 
-    building: Mapped[str] = mapped_column(String(64), nullable=False)
-    name: Mapped[str] = mapped_column(String(64), nullable=False)  # "LT-1", "Lab-203"
-    capacity: Mapped[int | None] = mapped_column(
-        Integer, nullable=True
-    )  # normal capacity (2/bench)
-    exam_capacity: Mapped[int | None] = mapped_column(
-        Integer, nullable=True
-    )  # exam capacity (1/bench)
+    building: Mapped[str] = mapped_column(String(8), nullable=False)  # "A" or "B"
+    floor: Mapped[int | None] = mapped_column(Integer, nullable=True)  # 1, 2, 3...
+    name: Mapped[str] = mapped_column(String(64), nullable=False)  # room number: "A101", "B203"
     room_type: Mapped[str] = mapped_column(
         Enum(
             "classroom", "smart_classroom", "lab", "auditorium", name="room_type", native_enum=False
@@ -192,7 +187,14 @@ class Room(UUIDPkMixin, TimestampMixin, Base):
         nullable=False,
         default="classroom",
     )
-    benches: Mapped[int | None] = mapped_column(Integer, nullable=True)  # number of benches
+    benches: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    capacity: Mapped[int | None] = mapped_column(Integer, nullable=True)  # normal: 2/bench
+    exam_capacity: Mapped[int | None] = mapped_column(Integer, nullable=True)  # exam: 1/bench
+    pc_count: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )  # for labs/smart classrooms
+    has_projector: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    has_ac: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     __table_args__ = (UniqueConstraint("building", "name", name="uq_rooms_building_name"),)
 

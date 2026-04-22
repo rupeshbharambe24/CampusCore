@@ -33,6 +33,14 @@ class StudentProfile(BaseModel):
     admission_year: int
     current_section_id: uuid.UUID | None = None
     lab_batch: str | None = None
+    guardian_name: str | None = None
+    guardian_phone: str | None = None
+    guardian_relation: str | None = None
+    address: str | None = None
+    blood_group: str | None = None
+    date_of_birth: str | None = None
+    gender: str | None = None
+    category: str | None = None
 
     model_config = {"from_attributes": True}
 
