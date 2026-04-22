@@ -23,6 +23,7 @@ from app.models.fees import FeeReceipt, FeeRecord, FeeStructure
 from app.models.leave import LeaveApplication
 from app.models.notification import Notification, PushSubscription
 from app.models.study_material import StudyMaterial
+from app.models.submission import Assignment, Submission
 from app.models.timetable import Holiday, Period, PeriodExtraSection, PeriodInstance
 from app.models.user import Faculty, Student, User
 
@@ -31,6 +32,7 @@ __all__ = [
     "Activity",
     "ActivityAttendanceRequest",
     "ActivityMembership",
+    "Assignment",
     "AttendanceRecord",
     "AuditLog",
     "Base",
@@ -59,6 +61,7 @@ __all__ = [
     "Student",
     "StudyMaterial",
     "Subject",
+    "Submission",
     "TimetableSlot",
     "User",
     "UserRole",
