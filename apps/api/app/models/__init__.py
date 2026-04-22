@@ -15,6 +15,7 @@ from app.models.activity import Activity, ActivityMembership
 from app.models.activity_attendance import ActivityAttendanceRequest
 from app.models.attendance import AttendanceRecord
 from app.models.audit_log import AuditLog
+from app.models.batch import Batch, Division
 from app.models.branch import Branch
 from app.models.calendar import CalendarEvent
 from app.models.department import Department
@@ -39,9 +40,11 @@ __all__ = [
     "AttendanceRecord",
     "AuditLog",
     "Base",
+    "Batch",
     "Branch",
     "CalendarEvent",
     "Department",
+    "Division",
     "Exam",
     "ExamResult",
     "ExamSchedule",

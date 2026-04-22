@@ -86,11 +86,12 @@ const hodNav: NavItem[] = [
 
 const adminNav: NavItem[] = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { label: 'Academic Structure', href: '/admin/academic', icon: Building2 },
+  { label: 'Batches', href: '/admin/batches', icon: GraduationCap },
+  { label: 'Academic Setup', href: '/admin/academic', icon: Building2 },
   { label: 'Timetable', href: '/admin/timetable', icon: Calendar },
-  { label: 'Reports', href: '/admin/reports', icon: BarChart3 },
   { label: 'Users', href: '/admin/users', icon: Users },
   { label: 'Exams', href: '/admin/exams', icon: ClipboardList },
+  { label: 'Reports', href: '/admin/reports', icon: BarChart3 },
   { label: 'Audit Log', href: '/admin/audit-log', icon: ScrollText },
   { label: 'Notifications', href: '/admin/notifications', icon: Bell },
 ];

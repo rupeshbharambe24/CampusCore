@@ -1,38 +1,66 @@
 """Seed all 4 batches of AI&DS students (FY through Final Year)."""
 
 import asyncio
-from datetime import date
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from app.core.config import get_settings
 from app.core.security import hash_password
-from app.models.academic import AcademicYear, Section, Semester
+from app.models.academic import Section, Semester
 from app.models.branch import Branch
 from app.models.enums import UserRole
 from app.models.user import Student, User
 
-
 STUDENT_NAMES = [
-    "Aarav Patel", "Aditi Sharma", "Arjun Deshmukh", "Bhavya Joshi",
-    "Diya Kulkarni", "Gaurav Patil", "Ishaan Reddy", "Kavya Mehta",
-    "Manav Singh", "Nisha Verma", "Pranav Gupta", "Riya Thakur",
-    "Saurabh Yadav", "Tanvi Kadam", "Uday Bhosale", "Vaishali Mane",
-    "Waris Khan", "Yash Jadhav", "Zara Sheikh", "Aditya Gaikwad",
-    "Ananya Pawar", "Chirag Dalvi", "Divya Kale", "Eshan Deshpande",
-    "Fatima Shaikh", "Ganesh Salunkhe", "Harsha Naik", "Isha Wagh",
-    "Jayesh More", "Kirti Sawant", "Lakshmi Iyer", "Mohit Sonawane",
-    "Neha Chavan", "Om Thorat", "Pallavi Shinde", "Rahul Jagtap",
-    "Sakshi Gavhane", "Tushar Nikam", "Uma Pardeshi", "Vikas Suryawanshi",
+    "Aarav Patel",
+    "Aditi Sharma",
+    "Arjun Deshmukh",
+    "Bhavya Joshi",
+    "Diya Kulkarni",
+    "Gaurav Patil",
+    "Ishaan Reddy",
+    "Kavya Mehta",
+    "Manav Singh",
+    "Nisha Verma",
+    "Pranav Gupta",
+    "Riya Thakur",
+    "Saurabh Yadav",
+    "Tanvi Kadam",
+    "Uday Bhosale",
+    "Vaishali Mane",
+    "Waris Khan",
+    "Yash Jadhav",
+    "Zara Sheikh",
+    "Aditya Gaikwad",
+    "Ananya Pawar",
+    "Chirag Dalvi",
+    "Divya Kale",
+    "Eshan Deshpande",
+    "Fatima Shaikh",
+    "Ganesh Salunkhe",
+    "Harsha Naik",
+    "Isha Wagh",
+    "Jayesh More",
+    "Kirti Sawant",
+    "Lakshmi Iyer",
+    "Mohit Sonawane",
+    "Neha Chavan",
+    "Om Thorat",
+    "Pallavi Shinde",
+    "Rahul Jagtap",
+    "Sakshi Gavhane",
+    "Tushar Nikam",
+    "Uma Pardeshi",
+    "Vikas Suryawanshi",
 ]
 
 # Batch config: (admission_year, year_of_study, batch_prefix, roll_prefix_digit)
 BATCHES = [
-    (2022, 4, "B", 4),   # Final Year (2026 batch) - B.Tech batch
-    (2023, 3, "T", 3),   # TY (2027 batch)
+    (2022, 4, "B", 4),  # Final Year (2026 batch) - B.Tech batch
+    (2023, 3, "T", 3),  # TY (2027 batch)
     # (2024, 2, "S", 2), # SY (2028 batch) — already seeded
-    (2025, 1, "F", 1),   # FY (2029 batch)
+    (2025, 1, "F", 1),  # FY (2029 batch)
 ]
 
 LAB_BATCHES = {
@@ -63,9 +91,11 @@ async def seed() -> None:
             print("ERROR: No current semester found.")
             return
 
-        for adm_year, year_of_study, batch_prefix, roll_digit in BATCHES:
+        for adm_year, year_of_study, _batch_prefix, roll_digit in BATCHES:
             grad_year = adm_year + 4
-            print(f"\n--- {grad_year} Batch (Admission {adm_year}, Currently Year {year_of_study}) ---")
+            print(
+                f"\n--- {grad_year} Batch (Admission {adm_year}, Currently Year {year_of_study}) ---"
+            )
 
             # Create sections A and B for this year
             for sec_name in ["A", "B"]:
