@@ -6,16 +6,17 @@ import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
 const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const slots = ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00'];
+// College timing: 10:00 AM to 5:00 PM, lunch 1:00-1:30
+const slots = ['10:00', '11:00', '12:00', '13:30', '14:30', '15:30', '16:30'];
 
-// Demo grid data
+// Demo grid data (AI&DS dept)
 const sectionGrid: Record<string, Record<string, { subject: string; faculty: string; room: string; type: string } | null>> = {
-  Mon: { '09:00': { subject: 'CS301', faculty: 'Dr. Sharma', room: 'LT-1', type: 'lecture' }, '10:00': { subject: 'EC302', faculty: 'Prof. Patel', room: 'LT-3', type: 'lecture' }, '11:00': { subject: 'MA303', faculty: 'Dr. Gupta', room: 'LT-1', type: 'lecture' }, '12:00': null, '14:00': { subject: 'CS391', faculty: 'Dr. Sharma', room: 'Lab-201', type: 'lab' }, '15:00': { subject: 'CS391', faculty: 'Dr. Sharma', room: 'Lab-201', type: 'lab' } },
-  Tue: { '09:00': { subject: 'MA303', faculty: 'Dr. Gupta', room: 'LT-2', type: 'lecture' }, '10:00': { subject: 'APT301', faculty: 'Prof. Singh', room: 'LT-5', type: 'aptitude' }, '11:00': { subject: 'CS301', faculty: 'Dr. Sharma', room: 'LT-1', type: 'lecture' }, '12:00': null, '14:00': null, '15:00': null },
-  Wed: { '09:00': { subject: 'EC302', faculty: 'Prof. Patel', room: 'LT-3', type: 'lecture' }, '10:00': { subject: 'CS301', faculty: 'Dr. Sharma', room: 'LT-1', type: 'lecture' }, '11:00': null, '12:00': null, '14:00': { subject: 'EC392', faculty: 'Prof. Patel', room: 'Lab-105', type: 'lab' }, '15:00': { subject: 'EC392', faculty: 'Prof. Patel', room: 'Lab-105', type: 'lab' } },
-  Thu: { '09:00': { subject: 'MA303', faculty: 'Dr. Gupta', room: 'LT-1', type: 'lecture' }, '10:00': { subject: 'EC302', faculty: 'Prof. Patel', room: 'LT-3', type: 'lecture' }, '11:00': { subject: 'CS301', faculty: 'Dr. Sharma', room: 'LT-1', type: 'lecture' }, '12:00': null, '14:00': null, '15:00': null },
-  Fri: { '09:00': { subject: 'APT301', faculty: 'Prof. Singh', room: 'LT-5', type: 'aptitude' }, '10:00': { subject: 'MA303', faculty: 'Dr. Gupta', room: 'LT-2', type: 'lecture' }, '11:00': null, '12:00': null, '14:00': { subject: 'CS391', faculty: 'Dr. Sharma', room: 'Lab-201', type: 'lab' }, '15:00': { subject: 'CS391', faculty: 'Dr. Sharma', room: 'Lab-201', type: 'lab' } },
-  Sat: { '09:00': null, '10:00': null, '11:00': null, '12:00': null, '14:00': null, '15:00': null },
+  Mon: { '10:00': { subject: 'AI301', faculty: 'Dr. Zanwar', room: 'LT-101', type: 'lecture' }, '11:00': { subject: 'AI302', faculty: 'Dr. Mehta', room: 'LT-102', type: 'lecture' }, '12:00': { subject: 'MA305', faculty: 'Prof. Deshmukh', room: 'LT-101', type: 'lecture' }, '13:30': null, '14:30': { subject: 'AI391', faculty: 'Dr. Kavita', room: 'AI Lab-201', type: 'lab' }, '15:30': { subject: 'AI391', faculty: 'Dr. Kavita', room: 'AI Lab-201', type: 'lab' }, '16:30': null },
+  Tue: { '10:00': { subject: 'AI303', faculty: 'Prof. Kulkarni', room: 'LT-101', type: 'lecture' }, '11:00': { subject: 'DS304', faculty: 'Dr. Patil', room: 'LT-102', type: 'lecture' }, '12:00': { subject: 'AI301', faculty: 'Dr. Zanwar', room: 'LT-101', type: 'lecture' }, '13:30': { subject: 'APT301', faculty: 'Prof. Kulkarni', room: 'LT-5', type: 'aptitude' }, '14:30': null, '15:30': null, '16:30': null },
+  Wed: { '10:00': { subject: 'MA305', faculty: 'Prof. Deshmukh', room: 'LT-101', type: 'lecture' }, '11:00': { subject: 'AI302', faculty: 'Dr. Mehta', room: 'LT-102', type: 'lecture' }, '12:00': { subject: 'AI303', faculty: 'Prof. Kulkarni', room: 'LT-101', type: 'lecture' }, '13:30': null, '14:30': { subject: 'AI392', faculty: 'Dr. Kavita', room: 'AI Lab-202', type: 'lab' }, '15:30': { subject: 'AI392', faculty: 'Dr. Kavita', room: 'AI Lab-202', type: 'lab' }, '16:30': null },
+  Thu: { '10:00': { subject: 'DS304', faculty: 'Dr. Patil', room: 'LT-102', type: 'lecture' }, '11:00': { subject: 'AI301', faculty: 'Dr. Zanwar', room: 'LT-101', type: 'lecture' }, '12:00': { subject: 'AI302', faculty: 'Dr. Mehta', room: 'LT-102', type: 'lecture' }, '13:30': { subject: 'MA305', faculty: 'Prof. Deshmukh', room: 'LT-101', type: 'lecture' }, '14:30': null, '15:30': null, '16:30': null },
+  Fri: { '10:00': { subject: 'APT301', faculty: 'Prof. Kulkarni', room: 'LT-5', type: 'aptitude' }, '11:00': { subject: 'AI303', faculty: 'Prof. Kulkarni', room: 'LT-101', type: 'lecture' }, '12:00': { subject: 'DS304', faculty: 'Dr. Patil', room: 'LT-102', type: 'lecture' }, '13:30': null, '14:30': { subject: 'AI391', faculty: 'Dr. Kavita', room: 'AI Lab-201', type: 'lab' }, '15:30': { subject: 'AI391', faculty: 'Dr. Kavita', room: 'AI Lab-201', type: 'lab' }, '16:30': null },
+  Sat: { '10:00': null, '11:00': null, '12:00': null, '13:30': null, '14:30': null, '15:30': null, '16:30': null },
 };
 
 // Derive faculty view from section grid
