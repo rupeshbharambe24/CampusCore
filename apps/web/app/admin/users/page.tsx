@@ -4,6 +4,7 @@ import { motion } from '@/components/motion';
 import { Users, Upload, Search, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import Link from 'next/link';
 
 const tabs = ['Students', 'Faculty'];
 
@@ -37,12 +38,14 @@ export default function UsersPage() {
           User Management
         </motion.h1>
         <div className="flex gap-2">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-accent"
-          >
-            <Upload className="h-4 w-4" /> Import CSV
-          </motion.button>
+          <Link href={'/admin/users/import' as '/'}>
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-accent"
+            >
+              <Upload className="h-4 w-4" /> Import CSV
+            </motion.div>
+          </Link>
           <motion.button
             whileHover={{ scale: 1.02 }}
             className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/20"

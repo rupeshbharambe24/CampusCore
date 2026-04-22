@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { PwaRegister } from '@/components/pwa-register';
+import { QueryProvider } from '@/lib/query-provider';
 import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
 
@@ -33,7 +34,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <QueryProvider>
+            {children}
+          </QueryProvider>
           <PwaRegister />
         </ThemeProvider>
       </body>

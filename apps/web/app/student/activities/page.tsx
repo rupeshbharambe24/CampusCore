@@ -1,17 +1,13 @@
 'use client';
 
 import { motion, StaggerList, StaggerItem } from '@/components/motion';
-import { Trophy, Plus, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { Trophy, Plus, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
-
-const activities = ['Baja SAE', 'Tifan', 'NSS', 'Cultural Committee', 'Sports', 'Hackathon'];
-
-const requests = [
-  { id: '1', activity: 'Baja SAE', startDate: '2026-04-15', endDate: '2026-04-17', reason: 'Inter-college competition at VIT Pune', status: 'approved', date: '2026-04-14' },
-  { id: '2', activity: 'Hackathon', startDate: '2026-04-20', endDate: '2026-04-20', reason: 'Smart India Hackathon qualifier round', status: 'pending', date: '2026-04-19' },
-  { id: '3', activity: 'NSS', startDate: '2026-03-10', endDate: '2026-03-10', reason: 'Blood donation camp organization', status: 'rejected', date: '2026-03-09', rejectReason: 'Not registered as NSS volunteer this semester' },
-];
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { activityRequestSchema, type ActivityRequestInput } from '@/lib/schemas';
+import { useActivityRequests, useSubmitActivityRequest, useCancelActivityRequest } from '@/lib/hooks';
 
 const statusConfig = {
   pending: { icon: Loader2, color: 'text-warning bg-warning/10 border-warning/30', label: 'Pending' },
@@ -22,6 +18,24 @@ const statusConfig = {
 
 export default function ActivitiesPage() {
   const [showForm, setShowForm] = useState(false);
+  const { data: requests, isLoading } = useActivityRequests();
+  const submitMutation = useSubmitActivityRequest();
+  const cancelMutation = useCancelActivityRequest();
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ActivityRequestInput>({
+    resolver: zodResolver(activityRequestSchema),
+  });
+
+  async function onSubmit(data: ActivityRequestInput) {
+    await submitMutation.mutateAsync(data);
+    reset();
+    setShowForm(false);
+  }
 
   return (
     <div className="space-y-6">
@@ -47,33 +61,35 @@ export default function ActivitiesPage() {
         </motion.button>
       </div>
 
-      {/* New request form */}
+      {/* Form */}
       {showForm && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
           className="rounded-xl border border-primary/20 bg-card p-6 shadow-sm"
         >
           <h2 className="mb-4 text-lg font-semibold">Submit Activity Attendance Request</h2>
-          <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setShowForm(false); }}>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Activity</label>
-                <select className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                  {activities.map((a) => (
-                    <option key={a}>{a}</option>
-                  ))}
-                </select>
+                <label className="text-sm font-medium">Activity ID</label>
+                <input
+                  {...register('activity_id')}
+                  placeholder="Activity UUID"
+                  className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                {errors.activity_id && <p className="text-xs text-destructive">{errors.activity_id.message}</p>}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Start Date</label>
-                  <input type="date" className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  <input type="date" {...register('start_date')} className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  {errors.start_date && <p className="text-xs text-destructive">{errors.start_date.message}</p>}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">End Date</label>
-                  <input type="date" className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  <input type="date" {...register('end_date')} className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  {errors.end_date && <p className="text-xs text-destructive">{errors.end_date.message}</p>}
                 </div>
               </div>
             </div>
@@ -81,22 +97,21 @@ export default function ActivitiesPage() {
               <label className="text-sm font-medium">Reason</label>
               <textarea
                 rows={3}
+                {...register('reason')}
                 placeholder="Explain why you need activity attendance..."
                 className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
+              {errors.reason && <p className="text-xs text-destructive">{errors.reason.message}</p>}
             </div>
             <div className="flex gap-3">
               <button
                 type="submit"
-                className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                disabled={isSubmitting}
+                className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
               >
-                Submit Request
+                {isSubmitting ? 'Submitting...' : 'Submit Request'}
               </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="rounded-lg border border-border px-5 py-2.5 text-sm font-medium hover:bg-accent"
-              >
+              <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border border-border px-5 py-2.5 text-sm font-medium hover:bg-accent">
                 Cancel
               </button>
             </div>
@@ -104,42 +119,64 @@ export default function ActivitiesPage() {
         </motion.div>
       )}
 
-      {/* Request timeline */}
-      <StaggerList className="space-y-4">
-        {requests.map((req) => {
-          const config = statusConfig[req.status as keyof typeof statusConfig];
-          const Icon = config.icon;
-          return (
-            <StaggerItem key={req.id}>
-              <div className={cn('rounded-xl border bg-card p-5 shadow-sm transition-all hover:shadow-md', config.color.split(' ').slice(1).join(' '))}>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3">
-                    <div className={cn('mt-0.5 rounded-lg p-2', config.color.split(' ').slice(0, 2).join(' '))}>
-                      <Icon className={cn('h-4 w-4', req.status === 'pending' && 'animate-spin')} />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">{req.activity}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {req.startDate === req.endDate ? req.startDate : `${req.startDate} → ${req.endDate}`}
-                      </p>
-                      <p className="mt-1 text-sm">{req.reason}</p>
-                      {req.status === 'rejected' && req.rejectReason && (
-                        <p className="mt-2 text-sm text-destructive">
-                          Reason: {req.rejectReason}
+      {/* Request list */}
+      {isLoading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : requests && requests.length > 0 ? (
+        <StaggerList className="space-y-4">
+          {requests.map((req) => {
+            const config = statusConfig[req.status as keyof typeof statusConfig] ?? statusConfig.pending;
+            const Icon = config.icon;
+            return (
+              <StaggerItem key={req.id}>
+                <div className={cn('rounded-xl border bg-card p-5 shadow-sm transition-all hover:shadow-md', config.color.split(' ').slice(1).join(' '))}>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3">
+                      <div className={cn('mt-0.5 rounded-lg p-2', config.color.split(' ').slice(0, 2).join(' '))}>
+                        <Icon className={cn('h-4 w-4', req.status === 'pending' && 'animate-spin')} />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">Activity Request</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {req.start_date === req.end_date ? req.start_date : `${req.start_date} → ${req.end_date}`}
                         </p>
+                        <p className="mt-1 text-sm">{req.reason}</p>
+                        {req.reject_reason && (
+                          <p className="mt-2 text-sm text-destructive">Rejected: {req.reject_reason}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <span className={cn('rounded-full px-3 py-1 text-xs font-medium capitalize', config.color.split(' ').slice(0, 2).join(' '))}>
+                        {config.label}
+                      </span>
+                      {req.status === 'pending' && (
+                        <button
+                          onClick={() => cancelMutation.mutate(req.id)}
+                          className="text-xs text-destructive hover:underline"
+                        >
+                          Cancel
+                        </button>
                       )}
                     </div>
                   </div>
-                  <span className={cn('rounded-full px-3 py-1 text-xs font-medium', config.color.split(' ').slice(0, 2).join(' '))}>
-                    {config.label}
-                  </span>
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Submitted {new Date(req.created_at).toLocaleDateString()}
+                  </p>
                 </div>
-                <p className="mt-3 text-xs text-muted-foreground">Submitted on {req.date}</p>
-              </div>
-            </StaggerItem>
-          );
-        })}
-      </StaggerList>
+              </StaggerItem>
+            );
+          })}
+        </StaggerList>
+      ) : (
+        <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center">
+          <Trophy className="mx-auto h-10 w-10 text-muted-foreground/40" />
+          <p className="mt-3 text-lg font-medium text-muted-foreground">No activity requests yet</p>
+          <p className="text-sm text-muted-foreground/70">Submit your first request using the button above</p>
+        </div>
+      )}
     </div>
   );
 }

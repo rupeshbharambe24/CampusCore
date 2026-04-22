@@ -14,6 +14,7 @@ import {
   Moon,
   Sun,
   Trophy,
+  User,
   Users,
   Bell,
   BarChart3,
@@ -36,6 +37,7 @@ const studentNav: NavItem[] = [
   { label: 'Attendance', href: '/student/attendance', icon: CheckSquare },
   { label: 'Activity Requests', href: '/student/activities', icon: Trophy },
   { label: 'Notifications', href: '/student/notifications', icon: Bell },
+  { label: 'Profile', href: '/student/profile', icon: User },
 ];
 
 const facultyNav: NavItem[] = [
@@ -44,6 +46,7 @@ const facultyNav: NavItem[] = [
   { label: 'My Classes', href: '/faculty/classes', icon: BookOpen },
   { label: 'Activity Approvals', href: '/faculty/approvals', icon: ClipboardList },
   { label: 'Notifications', href: '/faculty/notifications', icon: Bell },
+  { label: 'Profile', href: '/faculty/profile', icon: User },
 ];
 
 const adminNav: NavItem[] = [

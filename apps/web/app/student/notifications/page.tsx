@@ -1,27 +1,34 @@
 'use client';
 
 import { motion, StaggerList, StaggerItem } from '@/components/motion';
-import { Bell, CheckCircle2, XCircle, Calendar, Info } from 'lucide-react';
+import { Bell, CheckCircle2, XCircle, Calendar, Info, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const notifications = [
-  { id: '1', type: 'activity.approved', title: 'Activity attendance approved', body: 'Your Baja SAE attendance request (Apr 15-17) has been approved.', time: '2 hours ago', read: false },
-  { id: '2', type: 'timetable.changed', title: 'Timetable updated', body: 'Your Wednesday DS Lab has been moved to Lab-203.', time: '1 day ago', read: false },
-  { id: '3', type: 'activity.rejected', title: 'Activity attendance rejected', body: 'Your NSS request was rejected: Not registered as NSS volunteer.', time: '2 days ago', read: true },
-  { id: '4', type: 'attendance.warning', title: 'Attendance warning', body: 'Your Digital Electronics attendance has dropped below 75% (72%).', time: '3 days ago', read: true },
-  { id: '5', type: 'general', title: 'Welcome to CampusCore', body: 'Your account has been set up. Explore your timetable and track attendance.', time: '1 week ago', read: true },
-];
+import { useNotifications, useMarkAllRead } from '@/lib/hooks';
 
 const iconMap: Record<string, { icon: React.ElementType; color: string }> = {
   'activity.approved': { icon: CheckCircle2, color: 'text-success bg-success/10' },
   'activity.rejected': { icon: XCircle, color: 'text-destructive bg-destructive/10' },
+  'activity.request_submitted': { icon: Bell, color: 'text-warning bg-warning/10' },
   'timetable.changed': { icon: Calendar, color: 'text-info bg-info/10' },
   'attendance.warning': { icon: Bell, color: 'text-warning bg-warning/10' },
-  general: { icon: Info, color: 'text-primary bg-primary/10' },
 };
 
+const defaultIcon = { icon: Info, color: 'text-primary bg-primary/10' };
+
 export default function NotificationsPage() {
-  const unread = notifications.filter((n) => !n.read).length;
+  const { data: notifications, isLoading } = useNotifications();
+  const markAllRead = useMarkAllRead();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const items = notifications ?? [];
+  const unread = items.filter((n) => !n.is_read).length;
 
   return (
     <div className="space-y-6">
@@ -38,6 +45,7 @@ export default function NotificationsPage() {
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            onClick={() => markAllRead.mutate()}
             className="text-sm font-medium text-primary hover:underline"
           >
             Mark all as read
@@ -46,49 +54,52 @@ export default function NotificationsPage() {
       </div>
 
       {unread > 0 && (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-sm text-muted-foreground"
-        >
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-muted-foreground">
           You have <strong className="text-foreground">{unread}</strong> unread notification{unread !== 1 ? 's' : ''}
         </motion.p>
       )}
 
-      <StaggerList className="space-y-3">
-        {notifications.map((notif) => {
-          const config = iconMap[notif.type] ?? iconMap.general!;
-          const Icon = config.icon;
-          return (
-            <StaggerItem key={notif.id}>
-              <div
-                className={cn(
-                  'rounded-xl border bg-card p-4 transition-all hover:shadow-md',
-                  !notif.read && 'border-primary/20 bg-primary/[0.02]',
-                )}
-              >
-                <div className="flex gap-3">
-                  <div className={cn('mt-0.5 shrink-0 rounded-lg p-2', config.color)}>
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className={cn('text-sm font-medium', !notif.read && 'font-semibold')}>
-                        {notif.title}
-                      </h3>
-                      {!notif.read && (
-                        <span className="h-2 w-2 shrink-0 rounded-full bg-primary mt-1.5" />
-                      )}
+      {items.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center">
+          <Bell className="mx-auto h-10 w-10 text-muted-foreground/40" />
+          <p className="mt-3 text-lg font-medium text-muted-foreground">No notifications</p>
+        </div>
+      ) : (
+        <StaggerList className="space-y-3">
+          {items.map((notif) => {
+            const config = iconMap[notif.type] ?? defaultIcon;
+            const Icon = config.icon;
+            return (
+              <StaggerItem key={notif.id}>
+                <div
+                  className={cn(
+                    'rounded-xl border bg-card p-4 transition-all hover:shadow-md',
+                    !notif.is_read && 'border-primary/20 bg-primary/[0.02]',
+                  )}
+                >
+                  <div className="flex gap-3">
+                    <div className={cn('mt-0.5 shrink-0 rounded-lg p-2', config.color)}>
+                      <Icon className="h-4 w-4" />
                     </div>
-                    <p className="mt-0.5 text-sm text-muted-foreground">{notif.body}</p>
-                    <p className="mt-1.5 text-xs text-muted-foreground/70">{notif.time}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className={cn('text-sm font-medium', !notif.is_read && 'font-semibold')}>
+                          {notif.title}
+                        </h3>
+                        {!notif.is_read && <span className="h-2 w-2 shrink-0 rounded-full bg-primary mt-1.5" />}
+                      </div>
+                      <p className="mt-0.5 text-sm text-muted-foreground">{notif.body}</p>
+                      <p className="mt-1.5 text-xs text-muted-foreground/70">
+                        {new Date(notif.created_at).toLocaleString()}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </StaggerItem>
-          );
-        })}
-      </StaggerList>
+              </StaggerItem>
+            );
+          })}
+        </StaggerList>
+      )}
     </div>
   );
 }
