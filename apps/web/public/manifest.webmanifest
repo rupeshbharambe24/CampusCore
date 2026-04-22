@@ -1,11 +1,13 @@
 {
   "name": "CampusCore",
   "short_name": "CampusCore",
-  "description": "College management PWA",
-  "start_url": "/",
+  "description": "College management PWA — attendance, timetable, and activity tracking",
+  "start_url": "/dashboard",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#ffffff",
-  "theme_color": "#0b1220",
+  "theme_color": "#2563eb",
+  "categories": ["education"],
   "icons": [
     {
       "src": "/icon-192.png",

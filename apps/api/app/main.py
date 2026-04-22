@@ -5,7 +5,17 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
-from app.routers import activity_attendance, admin, attendance, auth, dev, health, me, timetable
+from app.routers import (
+    activity_attendance,
+    admin,
+    attendance,
+    auth,
+    dev,
+    health,
+    me,
+    reports,
+    timetable,
+)
 
 
 @asynccontextmanager
@@ -42,6 +52,7 @@ def create_app() -> FastAPI:
     app.include_router(timetable.router, prefix="/api/v1")
     app.include_router(attendance.router, prefix="/api/v1")
     app.include_router(activity_attendance.router, prefix="/api/v1")
+    app.include_router(reports.router, prefix="/api/v1")
 
     # Dev-only endpoints (seed users, etc.) — only registered in local environment.
     if settings.environment == "local":
