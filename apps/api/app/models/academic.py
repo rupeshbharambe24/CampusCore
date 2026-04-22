@@ -179,7 +179,20 @@ class Room(UUIDPkMixin, TimestampMixin, Base):
 
     building: Mapped[str] = mapped_column(String(64), nullable=False)
     name: Mapped[str] = mapped_column(String(64), nullable=False)  # "LT-1", "Lab-203"
-    capacity: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    capacity: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )  # normal capacity (2/bench)
+    exam_capacity: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )  # exam capacity (1/bench)
+    room_type: Mapped[str] = mapped_column(
+        Enum(
+            "classroom", "smart_classroom", "lab", "auditorium", name="room_type", native_enum=False
+        ),
+        nullable=False,
+        default="classroom",
+    )
+    benches: Mapped[int | None] = mapped_column(Integer, nullable=True)  # number of benches
 
     __table_args__ = (UniqueConstraint("building", "name", name="uq_rooms_building_name"),)
 

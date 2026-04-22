@@ -38,6 +38,7 @@ const studentNav: NavItem[] = [
   { label: 'Timetable', href: '/student/timetable', icon: Calendar },
   { label: 'Attendance', href: '/student/attendance', icon: CheckSquare },
   { label: 'Activity Requests', href: '/student/activities', icon: Trophy },
+  { label: 'Exams & Results', href: '/student/exams', icon: ClipboardList },
   { label: 'Leave Applications', href: '/student/leaves', icon: FileText },
   { label: 'Notifications', href: '/student/notifications', icon: Bell },
   { label: 'Profile', href: '/student/profile', icon: User },
@@ -70,6 +71,7 @@ const adminNav: NavItem[] = [
   { label: 'Timetable', href: '/admin/timetable', icon: Calendar },
   { label: 'Reports', href: '/admin/reports', icon: BarChart3 },
   { label: 'Users', href: '/admin/users', icon: Users },
+  { label: 'Exams', href: '/admin/exams', icon: ClipboardList },
   { label: 'Audit Log', href: '/admin/audit-log', icon: ScrollText },
   { label: 'Notifications', href: '/admin/notifications', icon: Bell },
 ];
