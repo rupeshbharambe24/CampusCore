@@ -12,17 +12,20 @@ from app.models.academic import (
     TimetableSlot,
 )
 from app.models.activity import Activity, ActivityMembership
+from app.models.activity_attendance import ActivityAttendanceRequest
 from app.models.attendance import AttendanceRecord
 from app.models.audit_log import AuditLog
 from app.models.branch import Branch
 from app.models.department import Department
 from app.models.enums import UserRole
+from app.models.notification import Notification, PushSubscription
 from app.models.timetable import Holiday, Period, PeriodExtraSection, PeriodInstance
 from app.models.user import Faculty, Student, User
 
 __all__ = [
     "AcademicYear",
     "Activity",
+    "ActivityAttendanceRequest",
     "ActivityMembership",
     "AttendanceRecord",
     "AuditLog",
@@ -32,9 +35,11 @@ __all__ = [
     "Faculty",
     "FacultySubjectAssignment",
     "Holiday",
+    "Notification",
     "Period",
     "PeriodExtraSection",
     "PeriodInstance",
+    "PushSubscription",
     "Room",
     "Section",
     "SectionSubject",
