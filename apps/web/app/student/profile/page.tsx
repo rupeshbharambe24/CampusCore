@@ -83,7 +83,7 @@ export default function ProfilePage() {
           <InfoItem icon={GraduationCap} label="Admission Year" value={String(student?.admission_year ?? '—')} />
           <InfoItem icon={Calendar} label="Current Year" value={student ? `Year ${new Date().getFullYear() - student.admission_year + 1}` : '—'} />
           <InfoItem icon={Shield} label="Lab Batch" value={student?.lab_batch ?? '—'} />
-          <InfoItem icon={MapPin} label="Section" value="—" />
+          <InfoItem icon={MapPin} label="Section" value={student?.current_section_id ? 'Assigned' : 'Not assigned'} />
           <InfoItem icon={Clock} label="Member Since" value={user?.created_at ? new Date(user.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'} />
         </div>
       </motion.div>

@@ -13,11 +13,13 @@ from app.routers import (
     admin,
     attendance,
     auth,
+    dashboard,
     dev,
     exam,
     fees,
     health,
     hod,
+    lookups,
     materials,
     me,
     reports,
@@ -91,6 +93,8 @@ def create_app() -> FastAPI:
     app.include_router(fees.router, prefix="/api/v1")
     app.include_router(materials.router, prefix="/api/v1")
     app.include_router(submissions.router, prefix="/api/v1")
+    app.include_router(lookups.router, prefix="/api/v1")
+    app.include_router(dashboard.router, prefix="/api/v1")
 
     if settings.environment == "local":
         app.include_router(dev.router, prefix="/api/v1")

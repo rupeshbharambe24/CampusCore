@@ -1,17 +1,25 @@
 'use client';
 
-import { BarChart3, Building2, Calendar, CheckSquare, GraduationCap, Users, AlertTriangle, TrendingUp } from 'lucide-react';
+import { BarChart3, Building2, Calendar, CheckSquare, GraduationCap, Users, AlertTriangle } from 'lucide-react';
 import { StatCard } from '@/components/stat-card';
 import { motion, StaggerList, StaggerItem } from '@/components/motion';
-import { AttendanceRing } from '@/components/attendance-ring';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api';
 
 const recentGaps = [
   { faculty: 'Prof. Patel', class: 'EC302 - CSE-A', time: '11:00 - 11:50', gap: '3h ago' },
   { faculty: 'Dr. Mehta', class: 'ME201 - MECH-B', time: '10:00 - 10:50', gap: '4h ago' },
 ];
 
+interface DashStats { total_students: number; total_faculty: number; total_departments: number; total_sections: number; total_subjects: number }
+
 export default function AdminDashboard() {
+  const { data: stats } = useQuery({
+    queryKey: ['admin', 'dashboard-stats'],
+    queryFn: () => api.get<DashStats>('/admin/dashboard-stats'),
+  });
+
   return (
     <div className="space-y-8">
       <div>
@@ -34,10 +42,10 @@ export default function AdminDashboard() {
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Total Students" value="5,247" icon={GraduationCap} color="primary" delay={0} />
-        <StatCard title="Total Faculty" value={687} icon={Users} color="info" delay={0.08} />
-        <StatCard title="Today's Submission Rate" value="78%" subtitle="312 of 400 periods marked" icon={CheckSquare} color="success" delay={0.16} />
-        <StatCard title="Below 75% Students" value={423} subtitle="Across all branches" icon={AlertTriangle} color="warning" delay={0.24} />
+        <StatCard title="Total Students" value={stats?.total_students ?? '—'} icon={GraduationCap} color="primary" delay={0} />
+        <StatCard title="Total Faculty" value={stats?.total_faculty ?? '—'} icon={Users} color="info" delay={0.08} />
+        <StatCard title="Departments" value={stats?.total_departments ?? '—'} subtitle={`${stats?.total_sections ?? 0} sections`} icon={Building2} color="success" delay={0.16} />
+        <StatCard title="Subjects" value={stats?.total_subjects ?? '—'} icon={CheckSquare} color="warning" delay={0.24} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

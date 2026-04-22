@@ -5,6 +5,8 @@ import { BarChart3, Download, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useReport } from '@/lib/hooks';
+import { LookupSelect } from '@/components/lookup-select';
+import { useSections, useSemesters } from '@/lib/lookup-hooks';
 
 const reportTypes = [
   { id: 'attendance/by-section', label: 'Section Attendance' },
@@ -18,6 +20,8 @@ export default function ReportsPage() {
   const [sectionId, setSectionId] = useState('');
   const [semesterId, setSemesterId] = useState('');
   const [threshold, setThreshold] = useState('75');
+  const { data: sectionOpts, isLoading: secLoading } = useSections();
+  const { data: semOpts, isLoading: semLoading } = useSemesters();
 
   const params: Record<string, string> = {};
   if (activeReport === 'attendance/by-section' && sectionId) params.section_id = sectionId;
@@ -66,8 +70,8 @@ export default function ReportsPage() {
       <div className="flex flex-wrap gap-3">
         {(activeReport.includes('section') || activeReport.includes('threshold')) && (
           <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">Section ID</label>
-            <input type="text" value={sectionId} onChange={(e) => setSectionId(e.target.value)} placeholder="UUID" className="flex h-9 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring w-64" />
+            <label className="text-xs font-medium text-muted-foreground">Section</label>
+            <LookupSelect items={sectionOpts} isLoading={secLoading} value={sectionId} onChange={setSectionId} placeholder="Select section..." className="w-64" />
           </div>
         )}
         {activeReport.includes('threshold') && (
@@ -78,8 +82,8 @@ export default function ReportsPage() {
         )}
         {activeReport === 'faculty-compliance' && (
           <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">Semester ID</label>
-            <input type="text" value={semesterId} onChange={(e) => setSemesterId(e.target.value)} placeholder="UUID" className="flex h-9 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring w-64" />
+            <label className="text-xs font-medium text-muted-foreground">Semester</label>
+            <LookupSelect items={semOpts} isLoading={semLoading} value={semesterId} onChange={setSemesterId} placeholder="Select semester..." className="w-64" />
           </div>
         )}
       </div>

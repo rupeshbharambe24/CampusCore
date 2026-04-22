@@ -8,6 +8,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { activityRequestSchema, type ActivityRequestInput } from '@/lib/schemas';
 import { useActivityRequests, useSubmitActivityRequest, useCancelActivityRequest } from '@/lib/hooks';
+import { LookupSelect } from '@/components/lookup-select';
+import { useActivities } from '@/lib/lookup-hooks';
 
 const statusConfig = {
   pending: { icon: Loader2, color: 'text-warning bg-warning/10 border-warning/30', label: 'Pending' },
@@ -20,6 +22,7 @@ export default function ActivitiesPage() {
   const [showForm, setShowForm] = useState(false);
   const { data: requests, isLoading } = useActivityRequests();
   const submitMutation = useSubmitActivityRequest();
+  const { data: activityOptions, isLoading: actLoading } = useActivities();
   const cancelMutation = useCancelActivityRequest();
 
   const {
@@ -27,6 +30,8 @@ export default function ActivitiesPage() {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
+    watch,
+    setValue,
   } = useForm<ActivityRequestInput>({
     resolver: zodResolver(activityRequestSchema),
   });
@@ -72,11 +77,13 @@ export default function ActivitiesPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Activity ID</label>
-                <input
-                  {...register('activity_id')}
-                  placeholder="Activity UUID"
-                  className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                <label className="text-sm font-medium">Activity</label>
+                <LookupSelect
+                  items={activityOptions}
+                  isLoading={actLoading}
+                  value={watch('activity_id') ?? ''}
+                  onChange={(v) => setValue('activity_id', v)}
+                  placeholder="Select activity..."
                 />
                 {errors.activity_id && <p className="text-xs text-destructive">{errors.activity_id.message}</p>}
               </div>

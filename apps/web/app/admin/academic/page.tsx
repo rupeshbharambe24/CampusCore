@@ -1,14 +1,15 @@
 'use client';
 
 import { motion } from '@/components/motion';
-import { Building2, Plus, Search, Download, Loader2, Trash2, X } from 'lucide-react';
+import { Building2, Plus, Search, Download, Loader2, Trash2, X, Wand2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useAdminList } from '@/lib/hooks';
 import { api } from '@/lib/api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { Wand2 } from 'lucide-react';
+import { LookupSelect } from '@/components/lookup-select';
+import { useDepartments, useSemesters, useBranches, useFacultyLookup } from '@/lib/lookup-hooks';
 
 // Simplified tabs: departments (=branches), sections (divisions), subjects, rooms, activities
 const tabs = ['departments', 'sections', 'subjects', 'rooms', 'activities'] as const;
@@ -39,8 +40,8 @@ const tabFields: Record<string, { name: string; type: string; placeholder: strin
     { name: 'name', type: 'text', placeholder: 'Artificial Intelligence & Data Science', required: true, label: 'Full Name' },
   ],
   sections: [
-    { name: 'semester_id', type: 'text', placeholder: 'Semester UUID', required: true, label: 'Semester' },
-    { name: 'branch_id', type: 'text', placeholder: 'Department UUID (from Departments tab)', required: true, label: 'Department' },
+    { name: 'semester_id', type: 'lookup_semester', placeholder: '', required: true, label: 'Semester' },
+    { name: 'branch_id', type: 'lookup_branch', placeholder: '', required: true, label: 'Department' },
     { name: 'year_of_study', type: 'select', placeholder: '2', required: true, label: 'Year', options: ['1', '2', '3', '4'] },
     { name: 'name', type: 'text', placeholder: 'A', required: true, label: 'Division (A, B, C...)' },
     { name: 'lab_batch_count', type: 'number', placeholder: '3', label: 'Lab Batches per Division' },
@@ -50,17 +51,17 @@ const tabFields: Record<string, { name: string; type: string; placeholder: strin
     { name: 'name', type: 'text', placeholder: 'Machine Learning', required: true, label: 'Subject Name' },
     { name: 'credits', type: 'number', placeholder: '3', label: 'Credits' },
     { name: 'kind', type: 'select', placeholder: 'lecture', label: 'Type', options: ['lecture', 'lab', 'tutorial', 'aptitude'] },
-    { name: 'department_id', type: 'text', placeholder: 'Department UUID', required: true, label: 'Department' },
+    { name: 'department_id', type: 'lookup_dept', placeholder: '', required: true, label: 'Department' },
   ],
   rooms: [
-    { name: 'building', type: 'text', placeholder: 'AI Block', required: true, label: 'Building' },
-    { name: 'name', type: 'text', placeholder: 'LT-101', required: true, label: 'Room Name/Number' },
-    { name: 'capacity', type: 'number', placeholder: '120', label: 'Normal Capacity (2/bench)' },
+    { name: 'building', type: 'select', placeholder: 'A', required: true, label: 'Building', options: ['A', 'B'] },
+    { name: 'name', type: 'text', placeholder: 'A101', required: true, label: 'Room Number (e.g. A101, B203)' },
+    { name: 'capacity', type: 'number', placeholder: '80', label: 'Normal Capacity (2/bench)' },
   ],
   activities: [
     { name: 'name', type: 'text', placeholder: 'Baja SAE', required: true, label: 'Activity Name' },
     { name: 'kind', type: 'select', placeholder: 'club', label: 'Type', options: ['club', 'team', 'competition', 'nss', 'sports', 'cultural', 'other'] },
-    { name: 'coordinator_id', type: 'text', placeholder: 'Faculty UUID (optional)', label: 'Coordinator' },
+    { name: 'coordinator_id', type: 'lookup_faculty', placeholder: '', label: 'Coordinator' },
   ],
 };
 
@@ -73,6 +74,12 @@ export default function AcademicPage() {
   const [createError, setCreateError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const qc = useQueryClient();
+
+  // Lookup data for dropdowns
+  const { data: deptLookup, isLoading: deptLoading } = useDepartments();
+  const { data: branchLookup, isLoading: branchLoading } = useBranches();
+  const { data: semLookup, isLoading: semLoading } = useSemesters();
+  const { data: facLookup, isLoading: facLoading } = useFacultyLookup();
 
   const { data, isLoading } = useAdminList<Record<string, unknown>>(activeTab, page, 50);
   const columns = tabColumns[activeTab] ?? [];
@@ -216,7 +223,15 @@ export default function AcademicPage() {
             {fields.map((field) => (
               <div key={field.name} className="space-y-1.5">
                 <label className="text-sm font-medium">{field.label ?? field.name}{field.required ? ' *' : ''}</label>
-                {field.type === 'select' ? (
+                {field.type === 'lookup_dept' ? (
+                  <LookupSelect items={deptLookup} isLoading={deptLoading} value={formData[field.name] ?? ''} onChange={(v) => setFormData((prev) => ({ ...prev, [field.name]: v }))} placeholder="Select department..." />
+                ) : field.type === 'lookup_branch' ? (
+                  <LookupSelect items={branchLookup} isLoading={branchLoading} value={formData[field.name] ?? ''} onChange={(v) => setFormData((prev) => ({ ...prev, [field.name]: v }))} placeholder="Select department..." />
+                ) : field.type === 'lookup_semester' ? (
+                  <LookupSelect items={semLookup} isLoading={semLoading} value={formData[field.name] ?? ''} onChange={(v) => setFormData((prev) => ({ ...prev, [field.name]: v }))} placeholder="Select semester..." />
+                ) : field.type === 'lookup_faculty' ? (
+                  <LookupSelect items={facLookup} isLoading={facLoading} value={formData[field.name] ?? ''} onChange={(v) => setFormData((prev) => ({ ...prev, [field.name]: v }))} placeholder="Select faculty (optional)..." />
+                ) : field.type === 'select' ? (
                   <select
                     value={formData[field.name] ?? field.options?.[0] ?? ''}
                     onChange={(e) => setFormData((prev) => ({ ...prev, [field.name]: e.target.value }))}

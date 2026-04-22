@@ -54,7 +54,12 @@ class Student(TimestampMixin, Base):
         ForeignKey("users.id", ondelete="CASCADE"),
         primary_key=True,
     )
-    roll_number: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    roll_number: Mapped[str] = mapped_column(
+        String(32), nullable=False, index=True
+    )  # local: AI2001
+    prn: Mapped[str | None] = mapped_column(
+        String(13), nullable=True, unique=True, index=True
+    )  # 13-digit university PRN
     branch_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("branches.id", ondelete="RESTRICT"),
