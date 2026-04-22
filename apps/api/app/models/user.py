@@ -62,7 +62,12 @@ class Student(TimestampMixin, Base):
         index=True,
     )
     admission_year: Mapped[int] = mapped_column(Integer, nullable=False)
-    # `current_section_id` is added in Phase 2 when the sections table exists.
+    current_section_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("sections.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     lab_batch: Mapped[str | None] = mapped_column(String(8), nullable=True)
 
     __table_args__ = (UniqueConstraint("roll_number", name="uq_students_roll_number"),)
