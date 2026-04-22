@@ -15,6 +15,7 @@ from app.routers import (
     fees,
     health,
     hod,
+    materials,
     me,
     reports,
     timetable,
@@ -59,6 +60,7 @@ def create_app() -> FastAPI:
     app.include_router(hod.router, prefix="/api/v1")
     app.include_router(exam.router, prefix="/api/v1")
     app.include_router(fees.router, prefix="/api/v1")
+    app.include_router(materials.router, prefix="/api/v1")
 
     # Dev-only endpoints (seed users, etc.) — only registered in local environment.
     if settings.environment == "local":

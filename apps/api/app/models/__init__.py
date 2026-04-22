@@ -22,6 +22,7 @@ from app.models.exam import Exam, ExamResult, ExamSchedule, SeatingArrangement
 from app.models.fees import FeeReceipt, FeeRecord, FeeStructure
 from app.models.leave import LeaveApplication
 from app.models.notification import Notification, PushSubscription
+from app.models.study_material import StudyMaterial
 from app.models.timetable import Holiday, Period, PeriodExtraSection, PeriodInstance
 from app.models.user import Faculty, Student, User
 
@@ -56,6 +57,7 @@ __all__ = [
     "SectionSubject",
     "Semester",
     "Student",
+    "StudyMaterial",
     "Subject",
     "TimetableSlot",
     "User",
