@@ -1,31 +1,38 @@
 /**
  * Typed API client for CampusCore backend.
- * Wraps fetch with auth token from Supabase session.
+ * Uses localStorage token (from local auth login).
  */
-
-import { createClient } from '@/lib/supabase/client';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1';
 
-async function getAuthHeaders(): Promise<HeadersInit> {
-  const supabase = createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
+function getAuthHeaders(): HeadersInit {
   const headers: HeadersInit = { 'Content-Type': 'application/json' };
-  if (session?.access_token) {
-    headers['Authorization'] = `Bearer ${session.access_token}`;
+
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('campuscore_token');
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
   }
+
   return headers;
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const headers = await getAuthHeaders();
+  const headers = getAuthHeaders();
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: { ...headers, ...options.headers },
   });
+
+  if (res.status === 401) {
+    // Token expired or invalid — clear and redirect to login
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('campuscore_token');
+      window.location.href = '/login';
+    }
+    throw new Error('Unauthorized');
+  }
 
   if (!res.ok) {
     const body = await res.text();

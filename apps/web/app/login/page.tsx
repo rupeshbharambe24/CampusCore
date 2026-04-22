@@ -2,8 +2,11 @@
 
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { GraduationCap } from 'lucide-react';
+import { motion } from '@/components/motion';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1';
 
 function LoginForm() {
   const router = useRouter();
@@ -20,20 +23,32 @@ function LoginForm() {
     setError(null);
     setLoading(true);
 
-    const supabase = createClient();
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      // Login via FastAPI local auth
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (authError) {
-      setError(authError.message);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({ detail: 'Login failed' }));
+        setError(body.detail ?? 'Invalid email or password');
+        setLoading(false);
+        return;
+      }
+
+      const { access_token } = await res.json();
+
+      // Store token in localStorage for API client to use
+      localStorage.setItem('campuscore_token', access_token);
+
+      router.push(next as '/');
+      router.refresh();
+    } catch {
+      setError('Cannot connect to server. Make sure the API is running.');
       setLoading(false);
-      return;
     }
-
-    router.push(next as '/');
-    router.refresh();
   }
 
   return (
@@ -45,9 +60,13 @@ function LoginForm() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+          >
             {error}
-          </div>
+          </motion.div>
         )}
 
         <div className="space-y-2">
@@ -59,7 +78,7 @@ function LoginForm() {
             type="email"
             required
             autoComplete="email"
-            placeholder="you@college.edu"
+            placeholder="you@campuscore.in"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -106,17 +125,17 @@ export default function LoginPage() {
     <main className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between border-b border-border px-6 py-4">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-md bg-primary" aria-hidden />
-          <span className="text-lg font-semibold tracking-tight">CampusCore</span>
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+            <GraduationCap className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <span className="text-lg font-bold tracking-tight">CampusCore</span>
         </div>
         <ThemeToggle />
       </header>
 
       <section className="container flex flex-1 flex-col items-center justify-center py-16">
         <Suspense
-          fallback={
-            <div className="text-sm text-muted-foreground">Loading...</div>
-          }
+          fallback={<div className="text-sm text-muted-foreground">Loading...</div>}
         >
           <LoginForm />
         </Suspense>

@@ -1,10 +1,8 @@
-import { createClient } from '@/lib/supabase/server';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-
+  // Client-side localStorage is cleared by the signout button onClick.
+  // This route just redirects to login.
   const origin = request.nextUrl.origin;
   return NextResponse.redirect(`${origin}/login`, { status: 302 });
 }

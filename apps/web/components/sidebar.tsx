@@ -180,15 +180,17 @@ export function Sidebar({
         </div>
 
         {/* Sign out */}
-        <form action="/auth/signout" method="POST">
-          <button
-            type="submit"
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-          >
-            <LogOut className="h-5 w-5" />
-            {!collapsed && <span>Sign out</span>}
-          </button>
-        </form>
+        <button
+          type="button"
+          onClick={() => {
+            localStorage.removeItem('campuscore_token');
+            window.location.href = '/login';
+          }}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+        >
+          <LogOut className="h-5 w-5" />
+          {!collapsed && <span>Sign out</span>}
+        </button>
       </div>
     </aside>
   );
