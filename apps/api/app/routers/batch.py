@@ -167,7 +167,17 @@ async def create_batch(body: CreateBatchRequest, user: CurrentUser, db: DbSessio
             f"Batch for admission year {body.admission_year} already exists",
         )
 
-    batch = Batch(admission_year=body.admission_year)
+    # Auto-calculate current semester based on admission year and today's date
+    today = date.today()
+    academic_year_start = today.year if today.month >= 6 else today.year - 1
+    years_elapsed = academic_year_start - body.admission_year
+    if years_elapsed < 0:
+        initial_sem = 1  # Future batch, starts at sem 1
+    else:
+        # Each year = 2 semesters. If we're in odd months (Jun-Dec) = odd sem, even months (Jan-May) = even sem
+        initial_sem = min(8, years_elapsed * 2 + (1 if today.month >= 6 else 2))
+
+    batch = Batch(admission_year=body.admission_year, current_semester_num=initial_sem)
     db.add(batch)
     await db.commit()
     await db.refresh(batch)
