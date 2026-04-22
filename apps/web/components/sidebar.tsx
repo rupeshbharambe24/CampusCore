@@ -7,6 +7,7 @@ import {
   Calendar,
   CheckSquare,
   ClipboardList,
+  FileText,
   GraduationCap,
   Home,
   LayoutDashboard,
@@ -37,12 +38,25 @@ const studentNav: NavItem[] = [
   { label: 'Timetable', href: '/student/timetable', icon: Calendar },
   { label: 'Attendance', href: '/student/attendance', icon: CheckSquare },
   { label: 'Activity Requests', href: '/student/activities', icon: Trophy },
+  { label: 'Leave Applications', href: '/student/leaves', icon: FileText },
   { label: 'Notifications', href: '/student/notifications', icon: Bell },
   { label: 'Profile', href: '/student/profile', icon: User },
 ];
 
 const facultyNav: NavItem[] = [
   { label: 'Dashboard', href: '/faculty', icon: Home },
+  { label: 'Today\'s Classes', href: '/faculty/today', icon: Calendar },
+  { label: 'My Classes', href: '/faculty/classes', icon: BookOpen },
+  { label: 'Activity Approvals', href: '/faculty/approvals', icon: ClipboardList },
+  { label: 'Notifications', href: '/faculty/notifications', icon: Bell },
+  { label: 'Profile', href: '/faculty/profile', icon: User },
+];
+
+const hodNav: NavItem[] = [
+  { label: 'Dashboard', href: '/faculty', icon: Home },
+  { label: 'Leave Approvals', href: '/faculty/leaves', icon: FileText },
+  { label: 'Dept Faculty', href: '/faculty/dept-faculty', icon: Users },
+  { label: 'Dept Students', href: '/faculty/dept-students', icon: GraduationCap },
   { label: 'Today\'s Classes', href: '/faculty/today', icon: Calendar },
   { label: 'My Classes', href: '/faculty/classes', icon: BookOpen },
   { label: 'Activity Approvals', href: '/faculty/approvals', icon: ClipboardList },
@@ -64,8 +78,9 @@ function getNavForRole(role: string): NavItem[] {
   switch (role) {
     case 'student':
       return studentNav;
-    case 'faculty':
     case 'hod':
+      return hodNav;
+    case 'faculty':
       return facultyNav;
     case 'admin':
     case 'super_admin':

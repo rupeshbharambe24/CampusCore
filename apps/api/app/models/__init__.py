@@ -18,6 +18,7 @@ from app.models.audit_log import AuditLog
 from app.models.branch import Branch
 from app.models.department import Department
 from app.models.enums import UserRole
+from app.models.leave import LeaveApplication
 from app.models.notification import Notification, PushSubscription
 from app.models.timetable import Holiday, Period, PeriodExtraSection, PeriodInstance
 from app.models.user import Faculty, Student, User
@@ -35,6 +36,7 @@ __all__ = [
     "Faculty",
     "FacultySubjectAssignment",
     "Holiday",
+    "LeaveApplication",
     "Notification",
     "Period",
     "PeriodExtraSection",

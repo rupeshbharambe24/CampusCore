@@ -4,8 +4,7 @@ Run: cd apps/api && uv run python scripts/seed_aids.py
 """
 
 import asyncio
-import uuid
-from datetime import date, datetime, UTC
+from datetime import date
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -48,21 +47,61 @@ async def seed() -> None:
         print(f"  Admin: admin@campuscore.in / admin1234 (id: {admin.id})")
 
         # ---- Department ----
-        dept = await _get_or_create(db, Department, code="AIDS", name="Artificial Intelligence & Data Science")
+        dept = await _get_or_create(
+            db, Department, code="AIDS", name="Artificial Intelligence & Data Science"
+        )
         print(f"  Department: {dept.code} (id: {dept.id})")
 
         # ---- Branch ----
-        branch = await _get_or_create(db, Branch, code="AIDS", name="AI & Data Science", department_id=dept.id, duration_years=4)
+        branch = await _get_or_create(
+            db,
+            Branch,
+            code="AIDS",
+            name="AI & Data Science",
+            department_id=dept.id,
+            duration_years=4,
+        )
         print(f"  Branch: {branch.code} (id: {branch.id})")
 
         # ---- Academic Year + Semester ----
-        ay = await _get_or_create(db, AcademicYear, label="2025-26", start_date=date(2025, 6, 1), end_date=date(2026, 5, 31), is_current=True)
-        sem = await _get_or_create(db, Semester, academic_year_id=ay.id, number=2, start_date=date(2026, 1, 15), end_date=date(2026, 5, 15), is_current=True)
+        ay = await _get_or_create(
+            db,
+            AcademicYear,
+            label="2025-26",
+            start_date=date(2025, 6, 1),
+            end_date=date(2026, 5, 31),
+            is_current=True,
+        )
+        sem = await _get_or_create(
+            db,
+            Semester,
+            academic_year_id=ay.id,
+            number=2,
+            start_date=date(2026, 1, 15),
+            end_date=date(2026, 5, 15),
+            is_current=True,
+        )
         print(f"  Academic Year: {ay.label}, Semester: {sem.number}")
 
         # ---- Sections ----
-        sec_a = await _get_or_create(db, Section, semester_id=sem.id, branch_id=branch.id, year_of_study=2, name="A", lab_batch_count=3)
-        sec_b = await _get_or_create(db, Section, semester_id=sem.id, branch_id=branch.id, year_of_study=2, name="B", lab_batch_count=3)
+        sec_a = await _get_or_create(
+            db,
+            Section,
+            semester_id=sem.id,
+            branch_id=branch.id,
+            year_of_study=2,
+            name="A",
+            lab_batch_count=3,
+        )
+        sec_b = await _get_or_create(
+            db,
+            Section,
+            semester_id=sem.id,
+            branch_id=branch.id,
+            year_of_study=2,
+            name="B",
+            lab_batch_count=3,
+        )
         print(f"  Sections: A (id: {sec_a.id}), B (id: {sec_b.id})")
 
         # ---- HOD: Dr. Sriniwas Zanwar ----
@@ -73,25 +112,55 @@ async def seed() -> None:
             role=UserRole.HOD,
             password="hod1234",
         )
-        hod_faculty = await _get_or_create(
-            db, Faculty, user_id=hod_user.id, employee_id="AIDS-HOD-001",
-            department_id=dept.id, designation="Professor & HOD", is_hod=True,
+        await _get_or_create(
+            db,
+            Faculty,
+            user_id=hod_user.id,
+            employee_id="AIDS-HOD-001",
+            department_id=dept.id,
+            designation="Professor & HOD",
+            is_hod=True,
         )
-        print(f"  HOD: Dr. Sriniwas Zanwar - sriniwas.zanwar@campuscore.in / hod1234")
+        print("  HOD: Dr. Sriniwas Zanwar - sriniwas.zanwar@campuscore.in / hod1234")
 
         # ---- Faculty ----
         faculty_data = [
             ("Dr. Priya Mehta", "priya.mehta@campuscore.in", "AIDS-F002", "Associate Professor"),
-            ("Prof. Amit Kulkarni", "amit.kulkarni@campuscore.in", "AIDS-F003", "Assistant Professor"),
+            (
+                "Prof. Amit Kulkarni",
+                "amit.kulkarni@campuscore.in",
+                "AIDS-F003",
+                "Assistant Professor",
+            ),
             ("Dr. Sneha Patil", "sneha.patil@campuscore.in", "AIDS-F004", "Associate Professor"),
-            ("Prof. Rajesh Deshmukh", "rajesh.deshmukh@campuscore.in", "AIDS-F005", "Assistant Professor"),
-            ("Dr. Kavita Sharma", "kavita.sharma@campuscore.in", "AIDS-F006", "Assistant Professor"),
+            (
+                "Prof. Rajesh Deshmukh",
+                "rajesh.deshmukh@campuscore.in",
+                "AIDS-F005",
+                "Assistant Professor",
+            ),
+            (
+                "Dr. Kavita Sharma",
+                "kavita.sharma@campuscore.in",
+                "AIDS-F006",
+                "Assistant Professor",
+            ),
         ]
 
         faculty_ids = [hod_user.id]
         for name, email, emp_id, designation in faculty_data:
-            fu = await _get_or_create_user(db, email=email, full_name=name, role=UserRole.FACULTY, password="faculty1234")
-            await _get_or_create(db, Faculty, user_id=fu.id, employee_id=emp_id, department_id=dept.id, designation=designation, is_hod=False)
+            fu = await _get_or_create_user(
+                db, email=email, full_name=name, role=UserRole.FACULTY, password="faculty1234"
+            )
+            await _get_or_create(
+                db,
+                Faculty,
+                user_id=fu.id,
+                employee_id=emp_id,
+                department_id=dept.id,
+                designation=designation,
+                is_hod=False,
+            )
             faculty_ids.append(fu.id)
             print(f"  Faculty: {name} - {email} / faculty1234")
 
@@ -109,7 +178,9 @@ async def seed() -> None:
 
         subject_objs = []
         for code, name, credits, kind in subjects_data:
-            s = await _get_or_create(db, Subject, code=code, name=name, credits=credits, kind=kind, department_id=dept.id)
+            s = await _get_or_create(
+                db, Subject, code=code, name=name, credits=credits, kind=kind, department_id=dept.id
+            )
             subject_objs.append(s)
             print(f"  Subject: {code} - {name}")
 
@@ -141,7 +212,9 @@ async def seed() -> None:
                 )
                 ss = ss_result.scalar_one_or_none()
                 if ss:
-                    await _get_or_create(db, FacultySubjectAssignment, faculty_id=fac_id, section_subject_id=ss.id)
+                    await _get_or_create(
+                        db, FacultySubjectAssignment, faculty_id=fac_id, section_subject_id=ss.id
+                    )
 
         # ---- Rooms ----
         rooms_data = [
@@ -167,20 +240,57 @@ async def seed() -> None:
         ]
         for day in range(6):  # Mon-Sat
             for start, end, label in slot_times:
-                await _get_or_create(db, TimetableSlot, day_of_week=day, start_time=start, end_time=end, slot_label=label)
+                await _get_or_create(
+                    db,
+                    TimetableSlot,
+                    day_of_week=day,
+                    start_time=start,
+                    end_time=end,
+                    slot_label=label,
+                )
 
         # ---- Students (20 per section) ----
         student_names = [
-            "Aarav Patel", "Aditi Sharma", "Arjun Deshmukh", "Bhavya Joshi",
-            "Diya Kulkarni", "Gaurav Patil", "Ishaan Reddy", "Kavya Mehta",
-            "Manav Singh", "Nisha Verma", "Pranav Gupta", "Riya Thakur",
-            "Saurabh Yadav", "Tanvi Kadam", "Uday Bhosale", "Vaishali Mane",
-            "Waris Khan", "Yash Jadhav", "Zara Sheikh", "Aditya Gaikwad",
-            "Ananya Pawar", "Chirag Dalvi", "Divya Kale", "Eshan Deshpande",
-            "Fatima Shaikh", "Ganesh Salunkhe", "Harsha Naik", "Isha Wagh",
-            "Jayesh More", "Kirti Sawant", "Lakshmi Iyer", "Mohit Sonawane",
-            "Neha Chavan", "Om Thorat", "Pallavi Shinde", "Rahul Jagtap",
-            "Sakshi Gavhane", "Tushar Nikam", "Uma Pardeshi", "Vikas Suryawanshi",
+            "Aarav Patel",
+            "Aditi Sharma",
+            "Arjun Deshmukh",
+            "Bhavya Joshi",
+            "Diya Kulkarni",
+            "Gaurav Patil",
+            "Ishaan Reddy",
+            "Kavya Mehta",
+            "Manav Singh",
+            "Nisha Verma",
+            "Pranav Gupta",
+            "Riya Thakur",
+            "Saurabh Yadav",
+            "Tanvi Kadam",
+            "Uday Bhosale",
+            "Vaishali Mane",
+            "Waris Khan",
+            "Yash Jadhav",
+            "Zara Sheikh",
+            "Aditya Gaikwad",
+            "Ananya Pawar",
+            "Chirag Dalvi",
+            "Divya Kale",
+            "Eshan Deshpande",
+            "Fatima Shaikh",
+            "Ganesh Salunkhe",
+            "Harsha Naik",
+            "Isha Wagh",
+            "Jayesh More",
+            "Kirti Sawant",
+            "Lakshmi Iyer",
+            "Mohit Sonawane",
+            "Neha Chavan",
+            "Om Thorat",
+            "Pallavi Shinde",
+            "Rahul Jagtap",
+            "Sakshi Gavhane",
+            "Tushar Nikam",
+            "Uma Pardeshi",
+            "Vikas Suryawanshi",
         ]
 
         batches = ["B1", "B2", "B3"]
@@ -192,14 +302,21 @@ async def seed() -> None:
                 email = f"{roll.lower()}@campuscore.in"
                 batch = batches[j % 3]
 
-                su = await _get_or_create_user(db, email=email, full_name=name, role=UserRole.STUDENT, password="student1234")
+                su = await _get_or_create_user(
+                    db, email=email, full_name=name, role=UserRole.STUDENT, password="student1234"
+                )
                 await _get_or_create(
-                    db, Student, user_id=su.id, roll_number=roll,
-                    branch_id=branch.id, admission_year=2024,
-                    current_section_id=sec.id, lab_batch=batch,
+                    db,
+                    Student,
+                    user_id=su.id,
+                    roll_number=roll,
+                    branch_id=branch.id,
+                    admission_year=2024,
+                    current_section_id=sec.id,
+                    lab_batch=batch,
                 )
 
-        print(f"  Students: 40 seeded (20 per section)")
+        print("  Students: 40 seeded (20 per section)")
 
         # ---- Activities ----
         activities_data = [
@@ -208,7 +325,9 @@ async def seed() -> None:
             ("NSS Unit", "nss", faculty_ids[4]),
         ]
         for name, kind, coord_id in activities_data:
-            await _get_or_create(db, Activity, name=name, kind=kind, coordinator_id=coord_id, is_active=True)
+            await _get_or_create(
+                db, Activity, name=name, kind=kind, coordinator_id=coord_id, is_active=True
+            )
             print(f"  Activity: {name}")
 
         await db.commit()
@@ -225,7 +344,9 @@ async def seed() -> None:
     await engine.dispose()
 
 
-async def _get_or_create_user(db: AsyncSession, email: str, full_name: str, role: UserRole, password: str) -> User:
+async def _get_or_create_user(
+    db: AsyncSession, email: str, full_name: str, role: UserRole, password: str
+) -> User:
     result = await db.execute(select(User).where(User.email == email))
     existing = result.scalar_one_or_none()
     if existing:
