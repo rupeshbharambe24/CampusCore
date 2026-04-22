@@ -36,6 +36,9 @@ export default function DashboardPage() {
       case 'hod':
         router.replace('/faculty' as '/');
         break;
+      case 'fees_department':
+        router.replace('/fees-dept' as '/');
+        break;
       case 'admin':
       case 'super_admin':
         router.replace('/admin' as '/');

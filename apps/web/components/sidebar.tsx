@@ -10,6 +10,7 @@ import {
   FileText,
   GraduationCap,
   Home,
+  IndianRupee,
   LayoutDashboard,
   LogOut,
   Moon,
@@ -39,6 +40,7 @@ const studentNav: NavItem[] = [
   { label: 'Attendance', href: '/student/attendance', icon: CheckSquare },
   { label: 'Activity Requests', href: '/student/activities', icon: Trophy },
   { label: 'Exams & Results', href: '/student/exams', icon: ClipboardList },
+  { label: 'Fees & Payments', href: '/student/fees', icon: IndianRupee },
   { label: 'Leave Applications', href: '/student/leaves', icon: FileText },
   { label: 'Notifications', href: '/student/notifications', icon: Bell },
   { label: 'Profile', href: '/student/profile', icon: User },
@@ -76,6 +78,11 @@ const adminNav: NavItem[] = [
   { label: 'Notifications', href: '/admin/notifications', icon: Bell },
 ];
 
+const feesDeptNav: NavItem[] = [
+  { label: 'Dashboard', href: '/fees-dept', icon: Home },
+  { label: 'Notifications', href: '/fees-dept/notifications', icon: Bell },
+];
+
 function getNavForRole(role: string): NavItem[] {
   switch (role) {
     case 'student':
@@ -84,6 +91,8 @@ function getNavForRole(role: string): NavItem[] {
       return hodNav;
     case 'faculty':
       return facultyNav;
+    case 'fees_department':
+      return feesDeptNav;
     case 'admin':
     case 'super_admin':
       return adminNav;
