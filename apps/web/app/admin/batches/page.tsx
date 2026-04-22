@@ -1,7 +1,8 @@
 'use client';
 
 import { motion, StaggerList, StaggerItem } from '@/components/motion';
-import { GraduationCap, Plus, Trash2, Users, Loader2, ChevronRight } from 'lucide-react';
+import { GraduationCap, Plus, Trash2, Loader2, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -65,9 +66,14 @@ export default function BatchManagementPage() {
           <GraduationCap className="mr-2 inline-block h-6 w-6 text-primary" />
           Batch Management
         </motion.h1>
-        <button onClick={() => setShowCreate(!showCreate)} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/20">
-          <Plus className="h-4 w-4" /> New Batch
-        </button>
+        <div className="flex gap-2">
+          <Link href={'/admin/batches/promote' as '/'} className="flex items-center gap-2 rounded-lg border border-success/30 bg-success/5 px-4 py-2 text-sm font-medium text-success hover:bg-success/10">
+            <ChevronRight className="h-4 w-4" /> Promote Batch
+          </Link>
+          <button onClick={() => setShowCreate(!showCreate)} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/20">
+            <Plus className="h-4 w-4" /> New Batch
+          </button>
+        </div>
       </div>
 
       <p className="text-sm text-muted-foreground">

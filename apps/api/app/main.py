@@ -25,6 +25,7 @@ from app.routers import (
     lookups,
     materials,
     me,
+    promotion,
     reeval,
     reports,
     submissions,
@@ -97,6 +98,7 @@ def create_app() -> FastAPI:
     app.include_router(fees.router, prefix="/api/v1")
     app.include_router(materials.router, prefix="/api/v1")
     app.include_router(submissions.router, prefix="/api/v1")
+    app.include_router(promotion.router, prefix="/api/v1")
     app.include_router(reeval.router, prefix="/api/v1")
     app.include_router(batch.router, prefix="/api/v1")
     app.include_router(calendar.router, prefix="/api/v1")

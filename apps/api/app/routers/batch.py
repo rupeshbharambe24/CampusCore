@@ -39,8 +39,10 @@ class BatchRead(BaseModel):
     admission_year: int
     graduation_year: int
     current_year: int
+    current_semester: int
     year_label: str
     label: str
+    is_graduated: bool
     divisions: list["DivisionRead"]
     student_count: int
 
@@ -82,7 +84,7 @@ async def list_batches(user: CurrentUser, db: DbSession) -> Any:
 
     items = []
     for b in batches:
-        yr = _current_year_of_study(b.admission_year)
+        yr = b.current_year_of_study
         yr_label = YEAR_LABELS.get(yr, f"Year {yr}")
 
         # Get divisions
@@ -136,8 +138,10 @@ async def list_batches(user: CurrentUser, db: DbSession) -> Any:
                 admission_year=b.admission_year,
                 graduation_year=b.admission_year + 4,
                 current_year=yr,
+                current_semester=b.current_semester_num,
                 year_label=yr_label,
-                label=f"{b.admission_year + 4} Batch — {yr_label}",
+                label=b.label,
+                is_graduated=b.is_graduated,
                 divisions=divs,
                 student_count=total_students.scalar_one(),
             )

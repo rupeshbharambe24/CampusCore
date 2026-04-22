@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 
 from app.core.db import DbSession
-from app.models.academic import AcademicYear, Section, Semester, Subject
+from app.models.academic import AcademicYear, Semester, Subject
 from app.models.activity import Activity
 from app.models.batch import Batch, Division
 from app.models.branch import Branch
@@ -62,7 +62,10 @@ async def lookup_semesters(db: DbSession) -> Any:
         .order_by(AcademicYear.label.desc(), Semester.number)
     )
     return [
-        LookupItem(id=str(sem.id), label=f"{ay.label} Sem {sem.number}{' (Current)' if sem.is_current else ''}")
+        LookupItem(
+            id=str(sem.id),
+            label=f"{ay.label} Sem {sem.number}{' (Current)' if sem.is_current else ''}",
+        )
         for sem, ay in result.all()
     ]
 
@@ -89,11 +92,13 @@ async def lookup_divisions(
     for div, batch, dept in result.all():
         yr = _current_year_of_study(batch.admission_year)
         yr_label = YEAR_LABELS.get(yr, f"Year {yr}")
-        items.append(LookupItem(
-            id=str(div.id),
-            label=f"{dept.code} {yr_label}-{div.name} ({batch.admission_year + 4} batch)",
-            extra=str(batch.admission_year),
-        ))
+        items.append(
+            LookupItem(
+                id=str(div.id),
+                label=f"{dept.code} {yr_label}-{div.name} ({batch.admission_year + 4} batch)",
+                extra=str(batch.admission_year),
+            )
+        )
     return items
 
 
@@ -113,12 +118,17 @@ async def lookup_subjects(db: DbSession, department_id: uuid.UUID | None = Query
     if department_id:
         query = query.where(Subject.department_id == department_id)
     result = await db.execute(query)
-    return [LookupItem(id=str(s.id), label=f"{s.code} — {s.name}", extra=s.kind) for s in result.scalars().all()]
+    return [
+        LookupItem(id=str(s.id), label=f"{s.code} — {s.name}", extra=s.kind)
+        for s in result.scalars().all()
+    ]
 
 
 @router.get("/activities", response_model=list[LookupItem])
 async def lookup_activities(db: DbSession) -> Any:
-    result = await db.execute(select(Activity).where(Activity.is_active.is_(True)).order_by(Activity.name))
+    result = await db.execute(
+        select(Activity).where(Activity.is_active.is_(True)).order_by(Activity.name)
+    )
     return [LookupItem(id=str(a.id), label=a.name, extra=a.kind) for a in result.scalars().all()]
 
 
@@ -137,8 +147,10 @@ async def lookup_faculty(db: DbSession, department_id: uuid.UUID | None = Query(
 
 @router.get("/students", response_model=list[LookupItem])
 async def lookup_students(
-    db: DbSession, q: str = Query("", min_length=0),
-    branch_id: uuid.UUID | None = Query(None), batch: int | None = Query(None),
+    db: DbSession,
+    q: str = Query("", min_length=0),
+    branch_id: uuid.UUID | None = Query(None),
+    batch: int | None = Query(None),
 ) -> Any:
     query = select(Student, User).join(User, Student.user_id == User.id)
     if branch_id:
@@ -150,7 +162,11 @@ async def lookup_students(
     query = query.order_by(Student.roll_number).limit(50)
     result = await db.execute(query)
     return [
-        LookupItem(id=str(s.user_id), label=f"{s.roll_number} — {u.full_name}", extra=f"Batch {s.admission_year + 4}")
+        LookupItem(
+            id=str(s.user_id),
+            label=f"{s.roll_number} — {u.full_name}",
+            extra=f"Batch {s.admission_year + 4}",
+        )
         for s, u in result.all()
     ]
 
@@ -162,9 +178,11 @@ async def lookup_batches(db: DbSession) -> Any:
     for batch in result.scalars().all():
         yr = _current_year_of_study(batch.admission_year)
         yr_label = YEAR_LABELS.get(yr, f"Year {yr}")
-        items.append(LookupItem(
-            id=str(batch.id),
-            label=f"{batch.admission_year + 4} Batch — {yr_label}",
-            extra=str(batch.admission_year),
-        ))
+        items.append(
+            LookupItem(
+                id=str(batch.id),
+                label=f"{batch.admission_year + 4} Batch — {yr_label}",
+                extra=str(batch.admission_year),
+            )
+        )
     return items

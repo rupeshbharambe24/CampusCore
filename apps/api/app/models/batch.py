@@ -2,20 +2,18 @@
 
 A batch = admission year cohort. E.g., "2024 batch" = students admitted in 2024,
 graduating in 2028, currently in SY (if current year is 2025-26).
-
-The system auto-calculates year_of_study and current semester from admission_year
-and today's date. Admin never manually picks semesters.
 """
 
 import uuid
-from datetime import date
 
-from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import Boolean, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base
 from app.models.mixins import TimestampMixin, UUIDPkMixin
+
+YEAR_LABELS = {1: "FY", 2: "SY", 3: "TY", 4: "Final Year"}
 
 
 class Batch(UUIDPkMixin, TimestampMixin, Base):
@@ -24,7 +22,8 @@ class Batch(UUIDPkMixin, TimestampMixin, Base):
     __tablename__ = "batches"
 
     admission_year: Mapped[int] = mapped_column(Integer, nullable=False, unique=True, index=True)
-    # graduation_year is always admission_year + 4 (B.Tech)
+    current_semester_num: Mapped[int] = mapped_column(Integer, nullable=False, default=1)  # 1-8
+    is_graduated: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     @property
     def graduation_year(self) -> int:
@@ -32,18 +31,21 @@ class Batch(UUIDPkMixin, TimestampMixin, Base):
 
     @property
     def current_year_of_study(self) -> int:
-        """1=FY, 2=SY, 3=TY, 4=Final based on current date."""
-        today = date.today()
-        # Academic year starts in June
-        academic_year_start = today.year if today.month >= 6 else today.year - 1
-        year = academic_year_start - self.admission_year + 1
-        return max(1, min(4, year))
+        """1=FY, 2=SY, 3=TY, 4=Final — derived from current_semester_num."""
+        return min(4, (self.current_semester_num + 1) // 2)
+
+    @property
+    def is_odd_semester(self) -> bool:
+        return self.current_semester_num % 2 == 1
 
     @property
     def label(self) -> str:
-        labels = {1: "FY", 2: "SY", 3: "TY", 4: "Final Year"}
+        if self.is_graduated:
+            return f"{self.graduation_year} Batch — Graduated"
         yr = self.current_year_of_study
-        return f"{self.graduation_year} Batch — {labels.get(yr, f'Year {yr}')}"
+        yr_label = YEAR_LABELS.get(yr, f"Year {yr}")
+        sem_type = "Odd" if self.is_odd_semester else "Even"
+        return f"{self.graduation_year} Batch — {yr_label} (Sem {self.current_semester_num}, {sem_type})"
 
 
 class Division(UUIDPkMixin, TimestampMixin, Base):
@@ -63,13 +65,9 @@ class Division(UUIDPkMixin, TimestampMixin, Base):
         nullable=False,
         index=True,
     )
-    name: Mapped[str] = mapped_column(String(8), nullable=False)  # "A", "B", "C"
+    name: Mapped[str] = mapped_column(String(8), nullable=False)
     lab_batch_count: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
 
     __table_args__ = (
         UniqueConstraint("batch_id", "department_id", "name", name="uq_division_batch_dept_name"),
     )
-
-    @property
-    def display_name(self) -> str:
-        return self.name  # Will be combined with dept+year at API level

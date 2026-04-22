@@ -74,6 +74,8 @@ class Student(TimestampMixin, Base):
         index=True,
     )
     lab_batch: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    is_detained: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    is_graduated: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     # Personal details
     guardian_name: Mapped[str | None] = mapped_column(String(128), nullable=True)
