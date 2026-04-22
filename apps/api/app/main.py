@@ -1,8 +1,10 @@
+import traceback
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.core.config import get_settings
 from app.routers import (
@@ -25,9 +27,7 @@ from app.routers import (
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    # Startup: nothing yet. Add Supabase JWKS fetch here in Phase 1.
     yield
-    # Shutdown: SQLAlchemy engine auto-disposes on process exit.
 
 
 def create_app() -> FastAPI:
@@ -44,11 +44,20 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.cors_origins,
+        allow_origins=["*"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Catch-all exception handler — ensures CORS headers are on error responses
+    @app.exception_handler(Exception)
+    async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={"detail": str(exc) if settings.debug else "Internal server error"},
+        )
 
     app.include_router(health.router, prefix="/api/v1")
     app.include_router(auth.router, prefix="/api/v1")
@@ -64,7 +73,6 @@ def create_app() -> FastAPI:
     app.include_router(materials.router, prefix="/api/v1")
     app.include_router(submissions.router, prefix="/api/v1")
 
-    # Dev-only endpoints (seed users, etc.) — only registered in local environment.
     if settings.environment == "local":
         app.include_router(dev.router, prefix="/api/v1")
 
