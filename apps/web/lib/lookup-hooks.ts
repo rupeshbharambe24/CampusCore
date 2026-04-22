@@ -25,15 +25,20 @@ export function useSemesters() {
   return useQuery({ queryKey: ['lookup', 'semesters'], queryFn: () => lookup('semesters') });
 }
 
-export function useSections(semesterId?: string, branchId?: string) {
+export function useDivisions(batchId?: string, departmentId?: string) {
   const params = new URLSearchParams();
-  if (semesterId) params.set('semester_id', semesterId);
-  if (branchId) params.set('branch_id', branchId);
+  if (batchId) params.set('batch_id', batchId);
+  if (departmentId) params.set('department_id', departmentId);
   const qs = params.toString();
   return useQuery({
-    queryKey: ['lookup', 'sections', semesterId, branchId],
-    queryFn: () => lookup(`sections${qs ? `?${qs}` : ''}`),
+    queryKey: ['lookup', 'divisions', batchId, departmentId],
+    queryFn: () => lookup(`divisions${qs ? `?${qs}` : ''}`),
   });
+}
+
+// Alias for backward compat — returns divisions now
+export function useSections(semesterId?: string, branchId?: string) {
+  return useDivisions();
 }
 
 export function useSubjects(departmentId?: string) {

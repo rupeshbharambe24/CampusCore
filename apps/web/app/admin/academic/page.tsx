@@ -11,12 +11,11 @@ import Link from 'next/link';
 import { LookupSelect } from '@/components/lookup-select';
 import { useDepartments, useSemesters, useBranches, useFacultyLookup } from '@/lib/lookup-hooks';
 
-// Simplified tabs: departments (=branches), sections (divisions), subjects, rooms, activities
-const tabs = ['departments', 'sections', 'subjects', 'rooms', 'activities'] as const;
+// Sections/divisions are now managed via Batch Management page
+const tabs = ['departments', 'subjects', 'rooms', 'activities'] as const;
 
 const tabLabels: Record<string, string> = {
   departments: 'Departments',
-  sections: 'Sections (Divisions)',
   subjects: 'Subjects',
   rooms: 'Rooms & Labs',
   activities: 'Clubs & Activities',
@@ -24,7 +23,6 @@ const tabLabels: Record<string, string> = {
 
 const tabColumns: Record<string, string[]> = {
   departments: ['code', 'name'],
-  sections: ['name', 'year_of_study', 'lab_batch_count'],
   subjects: ['code', 'name', 'credits', 'kind'],
   rooms: ['name', 'building', 'floor', 'room_type', 'benches', 'capacity', 'pc_count'],
   activities: ['name', 'kind', 'is_active'],
@@ -38,13 +36,6 @@ const tabFields: Record<string, { name: string; type: string; placeholder: strin
   departments: [
     { name: 'code', type: 'text', placeholder: 'AIDS', required: true, label: 'Short Code' },
     { name: 'name', type: 'text', placeholder: 'Artificial Intelligence & Data Science', required: true, label: 'Full Name' },
-  ],
-  sections: [
-    { name: 'semester_id', type: 'lookup_semester', placeholder: '', required: true, label: 'Semester' },
-    { name: 'branch_id', type: 'lookup_branch', placeholder: '', required: true, label: 'Department' },
-    { name: 'year_of_study', type: 'select', placeholder: '2', required: true, label: 'Year', options: ['1', '2', '3', '4'] },
-    { name: 'name', type: 'text', placeholder: 'A', required: true, label: 'Division (A, B, C...)' },
-    { name: 'lab_batch_count', type: 'number', placeholder: '3', label: 'Lab Batches per Division' },
   ],
   subjects: [
     { name: 'code', type: 'text', placeholder: 'AI301', required: true, label: 'Subject Code' },
@@ -126,8 +117,6 @@ export default function AcademicPage() {
         body[field.name] = field.type === 'number' ? Number(val) : val;
       }
     }
-    // Default lab_batch_count
-    if (activeTab === 'sections' && !body['lab_batch_count']) body['lab_batch_count'] = 3;
     createMutation.mutate(body);
   };
 
@@ -208,10 +197,9 @@ export default function AcademicPage() {
           Departments = Branches in this college. Creating a department automatically creates a matching branch. E.g., &quot;AIDS&quot; = &quot;AI &amp; Data Science&quot; department/branch.
         </div>
       )}
-      {activeTab === 'sections' && (
-        <div className="rounded-lg bg-primary/5 border border-primary/20 px-4 py-3 text-sm text-primary">
-          Sections are divisions within a year. E.g., AIDS SY-A = AI&amp;DS Second Year A division.
-          Lab batches: FY→F1/F2/F3, SY→S1/S2/S3, TY→T1/T2/T3, Final→B.Tech batch.
+      {activeTab === 'departments' && (
+        <div className="rounded-lg bg-info/5 border border-info/20 px-4 py-3 text-sm text-info">
+          Divisions (A, B, C) are managed in the <a href="/admin/batches" className="font-semibold underline">Batch Management</a> page.
         </div>
       )}
 

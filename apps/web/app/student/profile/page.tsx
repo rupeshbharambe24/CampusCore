@@ -87,7 +87,7 @@ export default function ProfilePage() {
           <InfoItem icon={GraduationCap} label="Admission Year" value={String(student?.admission_year ?? '—')} />
           <InfoItem icon={Calendar} label="Current Year" value={student ? `Year ${new Date().getFullYear() - student.admission_year + 1}` : '—'} />
           <InfoItem icon={Shield} label="Lab Batch" value={student?.lab_batch ?? '—'} />
-          <InfoItem icon={MapPin} label="Section" value={student?.current_section_id ? 'Assigned' : 'Not assigned'} />
+          <InfoItem icon={MapPin} label="Division" value={student?.current_section_id ? 'Assigned' : 'Not assigned'} />
           <InfoItem icon={User} label="Gender" value={student?.gender ?? '—'} />
           <InfoItem icon={Calendar} label="Date of Birth" value={student?.date_of_birth ?? '—'} />
           <InfoItem icon={Shield} label="Blood Group" value={student?.blood_group ?? '—'} />

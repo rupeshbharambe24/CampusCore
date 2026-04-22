@@ -1,9 +1,6 @@
-"""Lightweight lookup endpoints for dropdown selectors.
+"""Lightweight lookup endpoints for dropdown selectors."""
 
-No auth required for lookups — they return minimal data (id + display label).
-Used by frontend dropdowns instead of raw UUID text inputs.
-"""
-
+import datetime
 import uuid
 from typing import Any
 
@@ -14,11 +11,20 @@ from sqlalchemy import select
 from app.core.db import DbSession
 from app.models.academic import AcademicYear, Section, Semester, Subject
 from app.models.activity import Activity
+from app.models.batch import Batch, Division
 from app.models.branch import Branch
 from app.models.department import Department
 from app.models.user import Faculty, Student, User
 
 router = APIRouter(prefix="/lookups", tags=["lookups"])
+
+YEAR_LABELS = {1: "FY", 2: "SY", 3: "TY", 4: "Final Year"}
+
+
+def _current_year_of_study(admission_year: int) -> int:
+    today = datetime.date.today()
+    academic_year_start = today.year if today.month >= 6 else today.year - 1
+    return max(1, min(4, academic_year_start - admission_year + 1))
 
 
 class LookupItem(BaseModel):
@@ -43,10 +49,7 @@ async def lookup_branches(db: DbSession) -> Any:
 async def lookup_academic_years(db: DbSession) -> Any:
     result = await db.execute(select(AcademicYear).order_by(AcademicYear.label.desc()))
     return [
-        LookupItem(
-            id=str(ay.id),
-            label=f"{ay.label}{' (Current)' if ay.is_current else ''}",
-        )
+        LookupItem(id=str(ay.id), label=f"{ay.label}{' (Current)' if ay.is_current else ''}")
         for ay in result.scalars().all()
     ]
 
@@ -59,12 +62,39 @@ async def lookup_semesters(db: DbSession) -> Any:
         .order_by(AcademicYear.label.desc(), Semester.number)
     )
     return [
-        LookupItem(
-            id=str(sem.id),
-            label=f"{ay.label} Sem {sem.number}{' (Current)' if sem.is_current else ''}",
-        )
+        LookupItem(id=str(sem.id), label=f"{ay.label} Sem {sem.number}{' (Current)' if sem.is_current else ''}")
         for sem, ay in result.all()
     ]
+
+
+@router.get("/divisions", response_model=list[LookupItem])
+async def lookup_divisions(
+    db: DbSession,
+    batch_id: uuid.UUID | None = Query(None),
+    department_id: uuid.UUID | None = Query(None),
+) -> Any:
+    query = (
+        select(Division, Batch, Department)
+        .join(Batch, Division.batch_id == Batch.id)
+        .join(Department, Division.department_id == Department.id)
+    )
+    if batch_id:
+        query = query.where(Division.batch_id == batch_id)
+    if department_id:
+        query = query.where(Division.department_id == department_id)
+    query = query.order_by(Batch.admission_year.desc(), Department.code, Division.name)
+
+    result = await db.execute(query)
+    items = []
+    for div, batch, dept in result.all():
+        yr = _current_year_of_study(batch.admission_year)
+        yr_label = YEAR_LABELS.get(yr, f"Year {yr}")
+        items.append(LookupItem(
+            id=str(div.id),
+            label=f"{dept.code} {yr_label}-{div.name} ({batch.admission_year + 4} batch)",
+            extra=str(batch.admission_year),
+        ))
+    return items
 
 
 @router.get("/sections", response_model=list[LookupItem])
@@ -73,53 +103,27 @@ async def lookup_sections(
     semester_id: uuid.UUID | None = Query(None),
     branch_id: uuid.UUID | None = Query(None),
 ) -> Any:
-    query = select(Section, Branch).join(Branch, Section.branch_id == Branch.id)
-    if semester_id:
-        query = query.where(Section.semester_id == semester_id)
-    if branch_id:
-        query = query.where(Section.branch_id == branch_id)
-    query = query.order_by(Branch.code, Section.year_of_study, Section.name)
-
-    result = await db.execute(query)
-    year_labels = {1: "FY", 2: "SY", 3: "TY", 4: "Final"}
-    return [
-        LookupItem(
-            id=str(sec.id),
-            label=f"{br.code} {year_labels.get(sec.year_of_study, f'Y{sec.year_of_study}')}-{sec.name}",
-            extra=f"Year {sec.year_of_study}",
-        )
-        for sec, br in result.all()
-    ]
+    # Return divisions as sections for backward compat
+    return await lookup_divisions(db)
 
 
 @router.get("/subjects", response_model=list[LookupItem])
-async def lookup_subjects(
-    db: DbSession,
-    department_id: uuid.UUID | None = Query(None),
-) -> Any:
+async def lookup_subjects(db: DbSession, department_id: uuid.UUID | None = Query(None)) -> Any:
     query = select(Subject).order_by(Subject.code)
     if department_id:
         query = query.where(Subject.department_id == department_id)
     result = await db.execute(query)
-    return [
-        LookupItem(id=str(s.id), label=f"{s.code} — {s.name}", extra=s.kind)
-        for s in result.scalars().all()
-    ]
+    return [LookupItem(id=str(s.id), label=f"{s.code} — {s.name}", extra=s.kind) for s in result.scalars().all()]
 
 
 @router.get("/activities", response_model=list[LookupItem])
 async def lookup_activities(db: DbSession) -> Any:
-    result = await db.execute(
-        select(Activity).where(Activity.is_active.is_(True)).order_by(Activity.name)
-    )
+    result = await db.execute(select(Activity).where(Activity.is_active.is_(True)).order_by(Activity.name))
     return [LookupItem(id=str(a.id), label=a.name, extra=a.kind) for a in result.scalars().all()]
 
 
 @router.get("/faculty", response_model=list[LookupItem])
-async def lookup_faculty(
-    db: DbSession,
-    department_id: uuid.UUID | None = Query(None),
-) -> Any:
+async def lookup_faculty(db: DbSession, department_id: uuid.UUID | None = Query(None)) -> Any:
     query = select(Faculty, User).join(User, Faculty.user_id == User.id)
     if department_id:
         query = query.where(Faculty.department_id == department_id)
@@ -133,56 +137,34 @@ async def lookup_faculty(
 
 @router.get("/students", response_model=list[LookupItem])
 async def lookup_students(
-    db: DbSession,
-    q: str = Query("", min_length=0),
-    branch_id: uuid.UUID | None = Query(None),
-    batch: int | None = Query(None),
+    db: DbSession, q: str = Query("", min_length=0),
+    branch_id: uuid.UUID | None = Query(None), batch: int | None = Query(None),
 ) -> Any:
     query = select(Student, User).join(User, Student.user_id == User.id)
     if branch_id:
         query = query.where(Student.branch_id == branch_id)
     if batch:
-        # batch = graduation year, admission_year = batch - 4
         query = query.where(Student.admission_year == batch - 4)
     if q:
         query = query.where(User.full_name.ilike(f"%{q}%") | Student.roll_number.ilike(f"%{q}%"))
     query = query.order_by(Student.roll_number).limit(50)
     result = await db.execute(query)
     return [
-        LookupItem(
-            id=str(s.user_id),
-            label=f"{s.roll_number} — {u.full_name}",
-            extra=f"Batch {s.admission_year + 4}",
-        )
+        LookupItem(id=str(s.user_id), label=f"{s.roll_number} — {u.full_name}", extra=f"Batch {s.admission_year + 4}")
         for s, u in result.all()
     ]
 
 
 @router.get("/batches", response_model=list[LookupItem])
 async def lookup_batches(db: DbSession) -> Any:
-    """List distinct batches (graduation years) from student admission years."""
-    from sqlalchemy import distinct
-
-    result = await db.execute(
-        select(distinct(Student.admission_year)).order_by(Student.admission_year.desc())
-    )
-    year_labels = {1: "FY", 2: "SY", 3: "TY", 4: "Final"}
-    import datetime
-
-    current_year = datetime.date.today().year
+    result = await db.execute(select(Batch).order_by(Batch.admission_year.desc()))
     items = []
-    for (adm_year,) in result.all():
-        grad_year = adm_year + 4
-        current_study_year = current_year - adm_year + 1
-        if current_study_year < 1 or current_study_year > 4:
-            yr_label = "Graduated" if current_study_year > 4 else "Not started"
-        else:
-            yr_label = year_labels.get(current_study_year, f"Year {current_study_year}")
-        items.append(
-            LookupItem(
-                id=str(grad_year),
-                label=f"{grad_year} Batch — Currently {yr_label}",
-                extra=str(adm_year),
-            )
-        )
+    for batch in result.scalars().all():
+        yr = _current_year_of_study(batch.admission_year)
+        yr_label = YEAR_LABELS.get(yr, f"Year {yr}")
+        items.append(LookupItem(
+            id=str(batch.id),
+            label=f"{batch.admission_year + 4} Batch — {yr_label}",
+            extra=str(batch.admission_year),
+        ))
     return items

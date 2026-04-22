@@ -93,7 +93,7 @@ export default function UsersPage() {
                   <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Name</th>
                   <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Email</th>
                   <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Batch</th>
-                  <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Section</th>
+                  <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Division</th>
                   <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Lab Batch</th>
                 </tr>
               </thead>

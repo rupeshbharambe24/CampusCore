@@ -70,7 +70,7 @@ export default function TimetablePage() {
           <Calendar className="mx-auto h-10 w-10 text-muted-foreground/50" />
           <p className="mt-3 text-lg font-medium text-muted-foreground">No classes</p>
           <p className="text-sm text-muted-foreground/70">
-            {timetable?.length ? 'No classes scheduled for this day' : 'Your section timetable has not been set up yet'}
+            {timetable?.length ? 'No classes scheduled for this day' : 'Your timetable has not been set up yet'}
           </p>
         </motion.div>
       ) : (

@@ -7,14 +7,14 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { LookupSelect } from '@/components/lookup-select';
-import { useSections } from '@/lib/lookup-hooks';
+import { useDivisions } from '@/lib/lookup-hooks';
 
 interface DefaulterItem { student_id: string; roll_number: string; full_name: string; total_classes: number; attended: number; percentage: number }
 
 export default function DefaultersPage() {
   const [sectionId, setSectionId] = useState('');
   const [threshold, setThreshold] = useState('75');
-  const { data: sectionOpts, isLoading: secLoading } = useSections();
+  const { data: sectionOpts, isLoading: secLoading } = useDivisions();
 
   const params: Record<string, string> = { threshold };
   if (sectionId) params.section_id = sectionId;
@@ -55,8 +55,8 @@ export default function DefaultersPage() {
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground">Section</label>
-          <LookupSelect items={sectionOpts} isLoading={secLoading} value={sectionId} onChange={setSectionId} placeholder="All sections" className="w-56" />
+          <label className="text-xs font-medium text-muted-foreground">Division</label>
+          <LookupSelect items={sectionOpts} isLoading={secLoading} value={sectionId} onChange={setSectionId} placeholder="All divisions" className="w-56" />
         </div>
         <div className="space-y-1">
           <label className="text-xs font-medium text-muted-foreground">Threshold %</label>

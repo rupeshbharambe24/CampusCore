@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChart3, Building2, Calendar, CheckSquare, GraduationCap, Users, AlertTriangle } from 'lucide-react';
+import { BarChart3, Building2, Calendar, CheckSquare, GraduationCap, Users, AlertTriangle, ClipboardList } from 'lucide-react';
 import { StatCard } from '@/components/stat-card';
 import { motion, StaggerList, StaggerItem } from '@/components/motion';
 import Link from 'next/link';
@@ -44,7 +44,7 @@ export default function AdminDashboard() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard title="Total Students" value={stats?.total_students ?? '—'} icon={GraduationCap} color="primary" delay={0} />
         <StatCard title="Total Faculty" value={stats?.total_faculty ?? '—'} icon={Users} color="info" delay={0.08} />
-        <StatCard title="Departments" value={stats?.total_departments ?? '—'} subtitle={`${stats?.total_sections ?? 0} sections`} icon={Building2} color="success" delay={0.16} />
+        <StatCard title="Departments" value={stats?.total_departments ?? '—'} icon={Building2} color="success" delay={0.16} />
         <StatCard title="Subjects" value={stats?.total_subjects ?? '—'} icon={CheckSquare} color="warning" delay={0.24} />
       </div>
 
@@ -114,7 +114,7 @@ export default function AdminDashboard() {
       {/* Quick links */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { href: '/admin/academic', icon: Building2, label: 'Academic Structure', desc: 'Manage departments, branches, sections' },
+          { href: '/admin/batches', icon: GraduationCap, label: 'Batch Management', desc: 'Manage batches, divisions, students' },
           { href: '/admin/timetable', icon: Calendar, label: 'Timetable', desc: 'Manage periods and schedules' },
           { href: '/admin/reports', icon: BarChart3, label: 'Reports', desc: 'Attendance reports and analytics' },
           { href: '/admin/users', icon: Users, label: 'Users', desc: 'Manage students and faculty' },

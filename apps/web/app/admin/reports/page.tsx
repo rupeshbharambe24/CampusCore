@@ -9,7 +9,7 @@ import { LookupSelect } from '@/components/lookup-select';
 import { useSections, useSemesters } from '@/lib/lookup-hooks';
 
 const reportTypes = [
-  { id: 'attendance/by-section', label: 'Section Attendance' },
+  { id: 'attendance/by-section', label: 'Division Attendance' },
   { id: 'attendance/below-threshold', label: 'Below 75% Watchlist' },
   { id: 'faculty-compliance', label: 'Faculty Compliance' },
   { id: 'activity-summary', label: 'Activity Summary' },
@@ -70,8 +70,8 @@ export default function ReportsPage() {
       <div className="flex flex-wrap gap-3">
         {(activeReport.includes('section') || activeReport.includes('threshold')) && (
           <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">Section</label>
-            <LookupSelect items={sectionOpts} isLoading={secLoading} value={sectionId} onChange={setSectionId} placeholder="Select section..." className="w-64" />
+            <label className="text-xs font-medium text-muted-foreground">Division</label>
+            <LookupSelect items={sectionOpts} isLoading={secLoading} value={sectionId} onChange={setSectionId} placeholder="Select division..." className="w-64" />
           </div>
         )}
         {activeReport.includes('threshold') && (

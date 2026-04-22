@@ -4,6 +4,8 @@ import { motion } from '@/components/motion';
 import { Calendar, Plus, Users, LayoutGrid } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import { LookupSelect } from '@/components/lookup-select';
+import { useDivisions } from '@/lib/lookup-hooks';
 
 const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 // College timing: 10:00 AM to 5:00 PM, lunch 1:00-1:30
@@ -43,6 +45,8 @@ const typeColors: Record<string, string> = {
 export default function TimetableEditorPage() {
   const [viewMode, setViewMode] = useState<'section' | 'faculty'>('section');
   const [selectedFaculty, setSelectedFaculty] = useState(faculties[0]!);
+  const [selectedDivision, setSelectedDivision] = useState('');
+  const { data: divisionOpts, isLoading: divLoading } = useDivisions();
 
   const grid = viewMode === 'faculty' ? buildFacultyGrid(sectionGrid, selectedFaculty) : sectionGrid;
 
@@ -62,7 +66,7 @@ export default function TimetableEditorPage() {
             onClick={() => setViewMode('section')}
             className={cn('flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all', viewMode === 'section' ? 'bg-background shadow-sm' : 'text-muted-foreground')}
           >
-            <LayoutGrid className="h-3.5 w-3.5" /> By Section
+            <LayoutGrid className="h-3.5 w-3.5" /> By Division
           </button>
           <button
             onClick={() => setViewMode('faculty')}
@@ -73,12 +77,7 @@ export default function TimetableEditorPage() {
         </div>
 
         {viewMode === 'section' && (
-          <select className="rounded-lg border border-input bg-background px-3 py-2 text-sm">
-            <option>CSE-A (Year 2)</option>
-            <option>CSE-B (Year 2)</option>
-            <option>CSE-C (Year 2)</option>
-            <option>MECH-A (Year 2)</option>
-          </select>
+          <LookupSelect items={divisionOpts} isLoading={divLoading} value={selectedDivision} onChange={setSelectedDivision} placeholder="Select division..." className="w-64" />
         )}
 
         {viewMode === 'faculty' && (
@@ -138,7 +137,7 @@ export default function TimetableEditorPage() {
 
       <p className="text-xs text-muted-foreground">
         {viewMode === 'section'
-          ? 'Showing section timetable. Click a cell to assign or edit a period.'
+          ? 'Showing division timetable. Click a cell to assign or edit a period.'
           : `Showing ${selectedFaculty}'s timetable across all sections. Empty slots are free.`}
       </p>
     </div>

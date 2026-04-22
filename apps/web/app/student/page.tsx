@@ -64,7 +64,7 @@ export default function StudentDashboard() {
           </div>
           {todayClasses.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              No timetable data yet. Your section needs to be assigned in the admin panel.
+              No timetable data yet. Your division needs to be set up in Batch Management.
             </p>
           ) : (
             <StaggerList className="space-y-3">
