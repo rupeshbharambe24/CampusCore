@@ -69,7 +69,7 @@ export default function HomePage() {
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
           <a
-            href="http://localhost:8000/api/v1/docs"
+            href={`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'}/docs`}
             target="_blank"
             rel="noreferrer"
             className="inline-flex h-12 items-center justify-center rounded-xl border border-border bg-background px-6 text-sm font-semibold transition-all hover:bg-accent hover:border-primary/30"

@@ -1,8 +1,10 @@
 'use client';
 
 import { motion, StaggerList, StaggerItem } from '@/components/motion';
-import { IndianRupee, Plus, Search, Upload, Loader2 } from 'lucide-react';
+import { IndianRupee, Plus, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { useStudentLookup } from '@/lib/lookup-hooks';
+import { LookupSelect } from '@/components/lookup-select';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 
@@ -14,6 +16,8 @@ interface FeeRecord {
 export default function FeesDeptPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [studentId, setStudentId] = useState('');
+  const [studentSearch, setStudentSearch] = useState('');
+  const { data: studentOpts, isLoading: studLoading } = useStudentLookup(studentSearch);
   const [feeType, setFeeType] = useState('tuition');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState(0);
@@ -49,8 +53,11 @@ export default function FeesDeptPage() {
           <h2 className="mb-4 text-lg font-semibold">Create Fee Record</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Student ID (UUID)</label>
-              <input value={studentId} onChange={(e) => setStudentId(e.target.value)} placeholder="Student UUID" className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm" />
+              <label className="text-sm font-medium">Student</label>
+              <input value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} placeholder="Type name or roll number..." className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm mb-1" />
+              {studentSearch.length >= 2 && (
+                <LookupSelect items={studentOpts} isLoading={studLoading} value={studentId} onChange={setStudentId} placeholder="Select student..." />
+              )}
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Fee Type</label>

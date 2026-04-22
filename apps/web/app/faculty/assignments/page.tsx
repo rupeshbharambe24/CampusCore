@@ -3,6 +3,8 @@
 import { motion, StaggerList, StaggerItem } from '@/components/motion';
 import { FileCheck, Plus, Loader2, Users } from 'lucide-react';
 import { useState } from 'react';
+import { LookupSelect } from '@/components/lookup-select';
+import { useSubjects } from '@/lib/lookup-hooks';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import Link from 'next/link';
@@ -19,6 +21,7 @@ export default function FacultyAssignmentsPage() {
   const [dueDate, setDueDate] = useState('');
   const [maxMarks, setMaxMarks] = useState(10);
   const qc = useQueryClient();
+  const { data: subjectOpts, isLoading: subjLoading } = useSubjects();
 
   const { data, isLoading } = useQuery({
     queryKey: ['faculty', 'assignments'],
@@ -47,8 +50,8 @@ export default function FacultyAssignmentsPage() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-primary/20 bg-card p-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Subject ID</label>
-              <input value={subjectId} onChange={(e) => setSubjectId(e.target.value)} placeholder="UUID" className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm" />
+              <label className="text-sm font-medium">Subject</label>
+              <LookupSelect items={subjectOpts} isLoading={subjLoading} value={subjectId} onChange={setSubjectId} placeholder="Select subject..." />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Type</label>

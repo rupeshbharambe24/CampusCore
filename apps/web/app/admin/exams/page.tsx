@@ -1,11 +1,12 @@
 'use client';
 
 import { motion, StaggerList, StaggerItem } from '@/components/motion';
-import { ClipboardList, Plus, Calendar, Users, Loader2, Award } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { ClipboardList, Plus, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { LookupSelect } from '@/components/lookup-select';
+import { useSemesters } from '@/lib/lookup-hooks';
 
 interface ExamItem { id: string; name: string; exam_type: string; max_marks: number; is_published: boolean }
 interface ScheduleItem { id: string; subject_id: string; exam_date: string; start_time: string; end_time: string; sections: string | null }
@@ -17,6 +18,7 @@ export default function ExamsPage() {
   const [examType, setExamType] = useState('class_test');
   const [maxMarks, setMaxMarks] = useState(20);
   const qc = useQueryClient();
+  const { data: semOpts, isLoading: semLoading } = useSemesters();
 
   const { data: exams, isLoading } = useQuery({
     queryKey: ['admin', 'exams', semesterId],
@@ -49,8 +51,8 @@ export default function ExamsPage() {
 
       {/* Semester selector */}
       <div className="space-y-1">
-        <label className="text-xs font-medium text-muted-foreground">Semester ID</label>
-        <input value={semesterId} onChange={(e) => setSemesterId(e.target.value)} placeholder="Paste semester UUID" className="flex h-9 w-full max-w-sm rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+        <label className="text-xs font-medium text-muted-foreground">Semester</label>
+        <LookupSelect items={semOpts} isLoading={semLoading} value={semesterId} onChange={setSemesterId} placeholder="Select semester..." className="max-w-sm" />
       </div>
 
       {/* Create form */}

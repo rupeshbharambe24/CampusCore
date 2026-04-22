@@ -61,7 +61,10 @@ export default function ProfilePage() {
           {/* Name + role */}
           <div className="text-center sm:text-left flex-1">
             <h2 className="text-2xl font-bold">{user?.full_name}</h2>
-            <p className="text-sm text-muted-foreground capitalize">{user?.role} · AI & Data Science</p>
+            <p className="text-sm text-muted-foreground capitalize">
+              {user?.role} · AI & Data Science
+              {student && ` · ${student.admission_year + 4} Batch`}
+            </p>
             {student && (
               <p className="mt-1 text-sm font-mono text-primary">{student.roll_number}</p>
             )}
@@ -79,7 +82,8 @@ export default function ProfilePage() {
           <InfoItem icon={Mail} label="Email" value={user?.email ?? '—'} />
           <InfoItem icon={Phone} label="Phone" value={user?.phone ?? 'Not added'} />
           <InfoItem icon={Hash} label="Roll Number" value={student?.roll_number ?? '—'} />
-          <InfoItem icon={BookOpen} label="Branch" value="AI & Data Science" />
+          <InfoItem icon={Hash} label="PRN (University)" value={student?.prn ?? 'Not assigned'} />
+          <InfoItem icon={BookOpen} label="Branch" value={student?.branch_id ? 'AI & Data Science' : '—'} />
           <InfoItem icon={GraduationCap} label="Admission Year" value={String(student?.admission_year ?? '—')} />
           <InfoItem icon={Calendar} label="Current Year" value={student ? `Year ${new Date().getFullYear() - student.admission_year + 1}` : '—'} />
           <InfoItem icon={Shield} label="Lab Batch" value={student?.lab_batch ?? '—'} />

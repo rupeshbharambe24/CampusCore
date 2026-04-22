@@ -26,14 +26,7 @@ export default function AuditLogPage() {
     retry: false,
   });
 
-  // Demo data fallback
-  const entries: AuditEntry[] = data && data.length > 0 ? data : [
-    { id: '1', actor_id: 'admin-uuid', action: 'user.import', target_type: 'students', target_id: null, ip: '192.168.1.10', created_at: '2026-04-22T09:15:00Z' },
-    { id: '2', actor_id: 'faculty-uuid', action: 'attendance.edit', target_type: 'attendance_record', target_id: 'rec-uuid', ip: '192.168.1.15', created_at: '2026-04-22T10:30:00Z' },
-    { id: '3', actor_id: 'admin-uuid', action: 'timetable.change', target_type: 'period', target_id: 'period-uuid', ip: '192.168.1.10', created_at: '2026-04-21T14:00:00Z' },
-    { id: '4', actor_id: 'admin-uuid', action: 'user.password_reset', target_type: 'user', target_id: 'student-uuid', ip: '192.168.1.10', created_at: '2026-04-21T11:20:00Z' },
-    { id: '5', actor_id: 'faculty-uuid', action: 'attendance.submit', target_type: 'period_instance', target_id: 'inst-uuid', ip: '10.0.0.5', created_at: '2026-04-20T09:45:00Z' },
-  ];
+  const entries: AuditEntry[] = data ?? [];
 
   const filtered = entries.filter((e) => {
     if (actionFilter && !e.action.includes(actionFilter)) return false;

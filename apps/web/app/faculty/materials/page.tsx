@@ -3,6 +3,8 @@
 import { motion, StaggerList, StaggerItem } from '@/components/motion';
 import { BookOpen, Plus, Trash2, ExternalLink, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { LookupSelect } from '@/components/lookup-select';
+import { useSubjects } from '@/lib/lookup-hooks';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 
@@ -22,6 +24,7 @@ export default function FacultyMaterialsPage() {
   const [url, setUrl] = useState('');
   const [topic, setTopic] = useState('');
   const qc = useQueryClient();
+  const { data: subjectOpts, isLoading: subjLoading } = useSubjects();
 
   const { data: materials, isLoading } = useQuery({
     queryKey: ['faculty', 'materials'],
@@ -56,8 +59,8 @@ export default function FacultyMaterialsPage() {
           <h2 className="mb-4 text-lg font-semibold">Upload Study Material</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Subject ID</label>
-              <input value={subjectId} onChange={(e) => setSubjectId(e.target.value)} placeholder="Subject UUID" className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm" />
+              <label className="text-sm font-medium">Subject</label>
+              <LookupSelect items={subjectOpts} isLoading={subjLoading} value={subjectId} onChange={setSubjectId} placeholder="Select subject..." />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Type</label>
