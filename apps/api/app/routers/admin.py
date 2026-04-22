@@ -145,7 +145,19 @@ async def list_departments(
 @router.post("/departments", status_code=201, response_model=DepartmentRead)
 async def create_department(body: DepartmentCreate, user: CurrentUser, db: DbSession) -> Any:
     _require_admin(user)
-    return await _create_entity(db, Department, DepartmentRead, body)
+    # Create department
+    dept = Department(**body.model_dump())
+    db.add(dept)
+    await db.flush()
+    # Auto-create a matching branch (dept = branch in this college)
+    from app.models import Branch as BranchModel
+
+    existing_branch = await db.execute(select(BranchModel).where(BranchModel.code == body.code))
+    if not existing_branch.scalar_one_or_none():
+        db.add(BranchModel(department_id=dept.id, code=body.code, name=body.name, duration_years=4))
+    await db.commit()
+    await db.refresh(dept)
+    return DepartmentRead.model_validate(dept)
 
 
 @router.get("/departments/{id}", response_model=DepartmentRead)
