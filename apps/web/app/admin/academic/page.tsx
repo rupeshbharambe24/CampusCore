@@ -71,6 +71,7 @@ export default function AcademicPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [createError, setCreateError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const qc = useQueryClient();
 
   const { data, isLoading } = useAdminList<Record<string, unknown>>(activeTab, page, 50);
@@ -90,7 +91,14 @@ export default function AcademicPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.delete(`/admin/${activeTab}/${id}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', activeTab] }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', activeTab] }); setDeleteError(null); },
+    onError: (err: Error) => {
+      const msg = err.message;
+      // Extract detail from API error like 'API 409: {"detail":"Cannot delete..."}'
+      const match = msg.match(/"detail"\s*:\s*"([^"]+)"/);
+      setDeleteError(match ? match[1]! : msg);
+      setTimeout(() => setDeleteError(null), 6000);
+    },
   });
 
   const handleCreate = () => {
@@ -247,6 +255,21 @@ export default function AcademicPage() {
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={`Search ${tabLabels[activeTab]}...`} className="flex h-10 w-full rounded-lg border border-input bg-background pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
       </div>
+
+      {/* Delete error toast */}
+      {deleteError && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          className="flex items-center justify-between rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3"
+        >
+          <p className="text-sm font-medium text-destructive">{deleteError}</p>
+          <button onClick={() => setDeleteError(null)} className="ml-4 text-destructive hover:text-destructive/80">
+            <X className="h-4 w-4" />
+          </button>
+        </motion.div>
+      )}
 
       {/* Table */}
       {isLoading ? (
