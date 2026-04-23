@@ -14,6 +14,7 @@ from app.routers import (
     attendance,
     auth,
     batch,
+    batch_subjects,
     calendar,
     dashboard,
     dev,
@@ -101,6 +102,7 @@ def create_app() -> FastAPI:
     app.include_router(promotion.router, prefix="/api/v1")
     app.include_router(reeval.router, prefix="/api/v1")
     app.include_router(batch.router, prefix="/api/v1")
+    app.include_router(batch_subjects.router, prefix="/api/v1")
     app.include_router(calendar.router, prefix="/api/v1")
     app.include_router(faculty_leave.router, prefix="/api/v1")
     app.include_router(lookups.router, prefix="/api/v1")

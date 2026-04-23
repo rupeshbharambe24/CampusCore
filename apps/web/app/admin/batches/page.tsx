@@ -150,9 +150,14 @@ export default function BatchManagementPage() {
                                 <p className="font-medium">{div.display_name}</p>
                                 <p className="text-xs text-muted-foreground">{div.lab_batch_count} lab batches · {div.student_count} students</p>
                               </div>
-                              <button onClick={() => deleteDiv.mutate(div.id)} className="rounded-md p-1 text-destructive hover:bg-destructive/10">
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <Link href={`/admin/batches/${batch.id}/divisions/${div.id}` as '/'} className="rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10">
+                                  Step 2: Faculty
+                                </Link>
+                                <button onClick={() => deleteDiv.mutate(div.id)} className="rounded-md p-1 text-destructive hover:bg-destructive/10">
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -188,7 +193,10 @@ export default function BatchManagementPage() {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
+                          <Link href={`/admin/batches/${batch.id}/subjects` as '/'} className="flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10">
+                            Step 1: Manage Subjects
+                          </Link>
                           <button onClick={() => { setShowAddDiv(batch.id); setDivDeptId(''); }} className="flex items-center gap-1.5 rounded-lg border border-border bg-background/80 px-3 py-2 text-sm font-medium hover:bg-accent">
                             <Plus className="h-3.5 w-3.5" /> Add Divisions
                           </button>
