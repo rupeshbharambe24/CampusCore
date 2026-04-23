@@ -124,6 +124,19 @@ async def lookup_subjects(db: DbSession, department_id: uuid.UUID | None = Query
     ]
 
 
+@router.get("/exams", response_model=list[LookupItem])
+async def lookup_exams(db: DbSession) -> Any:
+    from app.models.exam import Exam
+
+    result = await db.execute(select(Exam).where(Exam.is_published.is_(True)).order_by(Exam.name))
+    return [
+        LookupItem(
+            id=str(e.id), label=f"{e.name} ({e.exam_type.replace('_', ' ')}, max {e.max_marks})"
+        )
+        for e in result.scalars().all()
+    ]
+
+
 @router.get("/activities", response_model=list[LookupItem])
 async def lookup_activities(db: DbSession) -> Any:
     result = await db.execute(

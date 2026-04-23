@@ -36,6 +36,8 @@ export interface MeResponse {
     date_of_birth: string | null;
     gender: string | null;
     category: string | null;
+    is_detained: boolean;
+    is_graduated: boolean;
   } | null;
   faculty: {
     employee_id: string;

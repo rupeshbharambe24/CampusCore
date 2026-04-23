@@ -6,7 +6,7 @@ export interface DeptOverview {
   department_code: string;
   total_faculty: number;
   total_students: number;
-  total_sections: number;
+  total_divisions: number;
   total_subjects: number;
   pending_leaves: number;
 }

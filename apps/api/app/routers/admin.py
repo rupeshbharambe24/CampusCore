@@ -57,7 +57,7 @@ from app.schemas.common import PaginatedResponse
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
-ADMIN_ROLES = {UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.HOD}
+ADMIN_ROLES = {UserRole.ADMIN, UserRole.SUPER_ADMIN}
 
 
 def _require_admin(user: Any) -> None:

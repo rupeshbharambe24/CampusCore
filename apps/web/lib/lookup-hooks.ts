@@ -46,6 +46,10 @@ export function useSubjects(departmentId?: string) {
   return useQuery({ queryKey: ['lookup', 'subjects', departmentId], queryFn: () => lookup(`subjects${qs}`) });
 }
 
+export function useExams() {
+  return useQuery({ queryKey: ['lookup', 'exams'], queryFn: () => lookup('exams') });
+}
+
 export function useActivities() {
   return useQuery({ queryKey: ['lookup', 'activities'], queryFn: () => lookup('activities') });
 }

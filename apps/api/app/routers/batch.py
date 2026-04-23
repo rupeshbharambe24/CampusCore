@@ -11,6 +11,7 @@ from sqlalchemy import func, select
 from app.core.db import DbSession
 from app.core.security import CurrentUser
 from app.models import UserRole
+from app.models.academic import Section, Semester
 from app.models.batch import Batch, Division
 from app.models.branch import Branch
 from app.models.department import Department
@@ -18,9 +19,8 @@ from app.models.user import Student
 
 router = APIRouter(prefix="/batches", tags=["batches"])
 
-ADMIN_ROLES = {UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.HOD}
+ADMIN_ROLES = {UserRole.ADMIN, UserRole.SUPER_ADMIN}
 YEAR_LABELS = {1: "FY", 2: "SY", 3: "TY", 4: "Final Year"}
-BATCH_PREFIXES = {1: "F", 2: "S", 3: "T", 4: "B"}
 
 
 def _current_year_of_study(admission_year: int) -> int:
@@ -56,6 +56,7 @@ class DivisionRead(BaseModel):
     display_name: str
     lab_batch_count: int
     student_count: int
+    section_id: uuid.UUID | None = None  # linked section for timetable/attendance
 
 
 class CreateBatchRequest(BaseModel):
@@ -70,13 +71,64 @@ class CreateDivisionsRequest(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Helper: auto-create section from division
+# ---------------------------------------------------------------------------
+
+
+async def _create_section_for_division(
+    db: Any,
+    batch: Batch,
+    dept: Department,
+    div: Division,
+) -> Any:
+    """Auto-create a section row matching this division for timetable/attendance compatibility."""
+    # Get the branch for this department
+    branch_result = await db.execute(select(Branch).where(Branch.department_id == dept.id))
+    branch = branch_result.scalar_one_or_none()
+    if not branch:
+        return None
+
+    # Get current semester
+    sem_result = await db.execute(select(Semester).where(Semester.is_current.is_(True)))
+    semester = sem_result.scalar_one_or_none()
+    if not semester:
+        return None
+
+    yr = batch.current_year_of_study
+
+    # Check if section already exists
+    existing = await db.execute(
+        select(Section).where(
+            Section.semester_id == semester.id,
+            Section.branch_id == branch.id,
+            Section.year_of_study == yr,
+            Section.name == div.name,
+        )
+    )
+    section = existing.scalar_one_or_none()
+    if section:
+        return section.id
+
+    section = Section(
+        semester_id=semester.id,
+        branch_id=branch.id,
+        year_of_study=yr,
+        name=div.name,
+        lab_batch_count=div.lab_batch_count,
+    )
+    db.add(section)
+    await db.flush()
+    return section.id
+
+
+# ---------------------------------------------------------------------------
 # List all batches
 # ---------------------------------------------------------------------------
 
 
 @router.get("", response_model=list[BatchRead])
 async def list_batches(user: CurrentUser, db: DbSession) -> Any:
-    if user.role not in ADMIN_ROLES:
+    if user.role not in {*ADMIN_ROLES, UserRole.HOD}:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
 
     result = await db.execute(select(Batch).order_by(Batch.admission_year.desc()))
@@ -96,7 +148,7 @@ async def list_batches(user: CurrentUser, db: DbSession) -> Any:
         )
         divs = []
         for div, dept in div_result.all():
-            # Count students by admission year + branch
+            # Count students for this division by matching admission_year + branch
             branch_result = await db.execute(
                 select(Branch.id).where(Branch.department_id == dept.id)
             )
@@ -111,7 +163,36 @@ async def list_batches(user: CurrentUser, db: DbSession) -> Any:
                         Student.branch_id.in_(branch_ids),
                     )
                 )
-                stu_count = stu_q.scalar_one()
+                total_in_dept = stu_q.scalar_one()
+                # Divide by number of divisions for this dept in this batch
+                div_count_result = await db.execute(
+                    select(func.count())
+                    .select_from(Division)
+                    .where(
+                        Division.batch_id == b.id,
+                        Division.department_id == dept.id,
+                    )
+                )
+                div_count = div_count_result.scalar_one()
+                stu_count = total_in_dept // max(1, div_count)
+
+            # Find linked section
+            section_id = None
+            if branch_ids:
+                sem_result = await db.execute(select(Semester).where(Semester.is_current.is_(True)))
+                sem = sem_result.scalar_one_or_none()
+                if sem:
+                    sec_result = await db.execute(
+                        select(Section.id).where(
+                            Section.semester_id == sem.id,
+                            Section.branch_id.in_(branch_ids),
+                            Section.year_of_study == yr,
+                            Section.name == div.name,
+                        )
+                    )
+                    sec = sec_result.scalar_one_or_none()
+                    if sec:
+                        section_id = sec
 
             divs.append(
                 DivisionRead(
@@ -122,7 +203,8 @@ async def list_batches(user: CurrentUser, db: DbSession) -> Any:
                     name=div.name,
                     display_name=f"{dept.code} {yr_label}-{div.name}",
                     lab_batch_count=div.lab_batch_count,
-                    student_count=stu_count // max(1, len([d for d, _ in div_result.all()]) or 1),
+                    student_count=stu_count,
+                    section_id=section_id,
                 )
             )
 
@@ -167,14 +249,12 @@ async def create_batch(body: CreateBatchRequest, user: CurrentUser, db: DbSessio
             f"Batch for admission year {body.admission_year} already exists",
         )
 
-    # Auto-calculate current semester based on admission year and today's date
     today = date.today()
     academic_year_start = today.year if today.month >= 6 else today.year - 1
     years_elapsed = academic_year_start - body.admission_year
     if years_elapsed < 0:
-        initial_sem = 1  # Future batch, starts at sem 1
+        initial_sem = 1
     else:
-        # Each year = 2 semesters. If we're in odd months (Jun-Dec) = odd sem, even months (Jan-May) = even sem
         initial_sem = min(8, years_elapsed * 2 + (1 if today.month >= 6 else 2))
 
     batch = Batch(admission_year=body.admission_year, current_semester_num=initial_sem)
@@ -182,13 +262,14 @@ async def create_batch(body: CreateBatchRequest, user: CurrentUser, db: DbSessio
     await db.commit()
     await db.refresh(batch)
 
-    yr = _current_year_of_study(batch.admission_year)
+    yr = batch.current_year_of_study
     return {
         "id": str(batch.id),
         "admission_year": batch.admission_year,
         "graduation_year": batch.admission_year + 4,
         "current_year": yr,
-        "label": f"{batch.admission_year + 4} Batch — {YEAR_LABELS.get(yr, f'Year {yr}')}",
+        "current_semester": batch.current_semester_num,
+        "label": batch.label,
     }
 
 
@@ -199,10 +280,9 @@ async def create_batch(body: CreateBatchRequest, user: CurrentUser, db: DbSessio
 
 @router.post("/divisions", status_code=201, response_model=list[DivisionRead])
 async def create_divisions(body: CreateDivisionsRequest, user: CurrentUser, db: DbSession) -> Any:
-    if user.role not in ADMIN_ROLES:
+    if user.role not in {*ADMIN_ROLES, UserRole.HOD}:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
 
-    # Verify batch exists
     batch_result = await db.execute(select(Batch).where(Batch.id == body.batch_id))
     batch = batch_result.scalar_one_or_none()
     if not batch:
@@ -213,12 +293,11 @@ async def create_divisions(body: CreateDivisionsRequest, user: CurrentUser, db: 
     if not dept:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Department not found")
 
-    yr = _current_year_of_study(batch.admission_year)
+    yr = batch.current_year_of_study
     yr_label = YEAR_LABELS.get(yr, f"Year {yr}")
     created = []
 
     for div_name in body.division_names:
-        # Check if already exists
         existing = await db.execute(
             select(Division).where(
                 Division.batch_id == body.batch_id,
@@ -237,6 +316,10 @@ async def create_divisions(body: CreateDivisionsRequest, user: CurrentUser, db: 
         )
         db.add(div)
         await db.flush()
+
+        # Auto-create matching section for timetable/attendance
+        section_id = await _create_section_for_division(db, batch, dept, div)
+
         created.append(
             DivisionRead(
                 id=div.id,
@@ -247,6 +330,7 @@ async def create_divisions(body: CreateDivisionsRequest, user: CurrentUser, db: 
                 display_name=f"{dept.code} {yr_label}-{div_name}",
                 lab_batch_count=body.lab_batch_count,
                 student_count=0,
+                section_id=section_id,
             )
         )
 
@@ -267,6 +351,16 @@ async def delete_batch(batch_id: uuid.UUID, user: CurrentUser, db: DbSession) ->
     batch = result.scalar_one_or_none()
     if not batch:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
+    # Check if students exist
+    stu_count = await db.execute(
+        select(func.count())
+        .select_from(Student)
+        .where(Student.admission_year == batch.admission_year)
+    )
+    if stu_count.scalar_one() > 0:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, "Cannot delete: students belong to this batch"
+        )
     # Delete divisions first
     divs = await db.execute(select(Division).where(Division.batch_id == batch_id))
     for d in divs.scalars().all():
@@ -282,7 +376,7 @@ async def delete_batch(batch_id: uuid.UUID, user: CurrentUser, db: DbSession) ->
 
 @router.delete("/divisions/{division_id}", status_code=204)
 async def delete_division(division_id: uuid.UUID, user: CurrentUser, db: DbSession) -> None:
-    if user.role not in ADMIN_ROLES:
+    if user.role not in {*ADMIN_ROLES, UserRole.HOD}:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     result = await db.execute(select(Division).where(Division.id == division_id))
     div = result.scalar_one_or_none()

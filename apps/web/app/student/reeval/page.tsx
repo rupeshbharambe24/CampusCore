@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { LookupSelect } from '@/components/lookup-select';
-import { useSemesters, useSubjects } from '@/lib/lookup-hooks';
+import { useExams, useSubjects } from '@/lib/lookup-hooks';
 
 interface ReEvalItem { id: string; exam_id: string; subject_id: string; reason: string; status: string; new_marks: string | null; reject_reason: string | null; created_at: string }
 
@@ -25,6 +25,7 @@ export default function ReEvalPage() {
   const [reason, setReason] = useState('');
   const qc = useQueryClient();
 
+  const { data: examOpts, isLoading: examLoading } = useExams();
   const { data: subjectOpts, isLoading: subjLoading } = useSubjects();
 
   const { data: requests, isLoading } = useQuery({
@@ -57,8 +58,8 @@ export default function ReEvalPage() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-primary/20 bg-card p-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Exam ID</label>
-              <input value={examId} onChange={(e) => setExamId(e.target.value)} placeholder="Exam UUID" className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm" />
+              <label className="text-sm font-medium">Exam</label>
+              <LookupSelect items={examOpts} isLoading={examLoading} value={examId} onChange={setExamId} placeholder="Select exam..." />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Subject</label>

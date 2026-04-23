@@ -61,6 +61,7 @@ const facultyNav: NavItem[] = [
   { label: 'Study Materials', href: '/faculty/materials', icon: BookOpen },
   { label: 'Assignments', href: '/faculty/assignments', icon: FileCheck },
   { label: 'Activity Approvals', href: '/faculty/approvals', icon: ClipboardList },
+  { label: 'Calendar', href: '/faculty/calendar', icon: Calendar },
   { label: 'My Leaves', href: '/faculty/my-leaves', icon: FileText },
   { label: 'Notifications', href: '/faculty/notifications', icon: Bell },
   { label: 'Profile', href: '/faculty/profile', icon: User },
@@ -79,6 +80,7 @@ const hodNav: NavItem[] = [
   { label: 'Study Materials', href: '/faculty/materials', icon: BookOpen },
   { label: 'Assignments', href: '/faculty/assignments', icon: FileCheck },
   { label: 'Activity Approvals', href: '/faculty/approvals', icon: ClipboardList },
+  { label: 'Calendar', href: '/faculty/calendar', icon: Calendar },
   { label: 'My Leaves', href: '/faculty/my-leaves', icon: FileText },
   { label: 'Notifications', href: '/faculty/notifications', icon: Bell },
   { label: 'Profile', href: '/faculty/profile', icon: User },
@@ -92,6 +94,7 @@ const adminNav: NavItem[] = [
   { label: 'Users', href: '/admin/users', icon: Users },
   { label: 'Exams', href: '/admin/exams', icon: ClipboardList },
   { label: 'Reports', href: '/admin/reports', icon: BarChart3 },
+  { label: 'Calendar', href: '/admin/calendar', icon: Calendar },
   { label: 'Audit Log', href: '/admin/audit-log', icon: ScrollText },
   { label: 'Notifications', href: '/admin/notifications', icon: Bell },
 ];

@@ -38,7 +38,7 @@ export default function SubjectAttendanceHistory() {
   });
 
   // Fallback: generate demo dates if API returns empty (no data yet)
-  const records = history && history.length > 0 ? history : generateDemoRecords(subject);
+  const records = history ?? [];
 
   return (
     <div className="space-y-6">
@@ -124,25 +124,4 @@ export default function SubjectAttendanceHistory() {
       )}
     </div>
   );
-}
-
-// Generate demo data when API has no records yet
-function generateDemoRecords(subject: { total: number; present: number; absent: number; activity: number } | undefined): DateRecord[] {
-  if (!subject) return [];
-  const records: DateRecord[] = [];
-  const today = new Date();
-  for (let i = 0; i < subject.total; i++) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - (subject.total - i) * 2);
-    let status = 'present';
-    if (i < subject.absent) status = 'absent';
-    else if (i < subject.absent + subject.activity) status = 'activity';
-    records.push({
-      date: d.toISOString().split('T')[0]!,
-      status,
-      slot_label: `P${(i % 6) + 1}`,
-      start_time: `${9 + (i % 6)}:00`,
-    });
-  }
-  return records.reverse();
 }

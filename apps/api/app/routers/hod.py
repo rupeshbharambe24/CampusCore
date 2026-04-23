@@ -21,10 +21,11 @@ from app.models import (
     Branch,
     Department,
     LeaveApplication,
-    Section,
     Subject,
     UserRole,
 )
+from app.models.academic import Section
+from app.models.batch import Division
 from app.models.notification import Notification
 from app.models.user import Faculty, Student, User
 
@@ -63,7 +64,7 @@ class DeptOverview(BaseModel):
     department_code: str
     total_faculty: int
     total_students: int
-    total_sections: int
+    total_divisions: int
     total_subjects: int
     pending_leaves: int
 
@@ -91,13 +92,9 @@ async def hod_overview(user: CurrentUser, db: DbSession) -> Any:
         else None
     )
 
-    # Count sections
-    section_count_result = (
-        await db.execute(
-            select(func.count()).select_from(Section).where(Section.branch_id.in_(branch_ids))
-        )
-        if branch_ids
-        else None
+    # Count divisions
+    division_count_result = await db.execute(
+        select(func.count()).select_from(Division).where(Division.department_id == dept_id)
     )
 
     # Count subjects
@@ -120,7 +117,7 @@ async def hod_overview(user: CurrentUser, db: DbSession) -> Any:
         department_code=dept.code,
         total_faculty=fac_count.scalar_one(),
         total_students=student_count_result.scalar_one() if student_count_result else 0,
-        total_sections=section_count_result.scalar_one() if section_count_result else 0,
+        total_divisions=division_count_result.scalar_one(),
         total_subjects=subj_count.scalar_one(),
         pending_leaves=leave_count.scalar_one(),
     )

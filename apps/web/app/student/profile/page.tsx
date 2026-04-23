@@ -66,7 +66,11 @@ export default function ProfilePage() {
               {student && ` · ${student.admission_year + 4} Batch`}
             </p>
             {student && (
-              <p className="mt-1 text-sm font-mono text-primary">{student.roll_number}</p>
+              <div className="mt-1 flex items-center gap-2">
+                <p className="text-sm font-mono text-primary">{student.roll_number}</p>
+                {student.is_graduated && <span className="rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success">Graduated</span>}
+                {student.is_detained && <span className="rounded-full bg-destructive/10 px-2.5 py-0.5 text-xs font-medium text-destructive">Detained</span>}
+              </div>
             )}
           </div>
 

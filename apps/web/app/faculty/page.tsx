@@ -42,7 +42,7 @@ export default function FacultyDashboard() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard title="Department Faculty" value={hodOverview.total_faculty} icon={Users} color="primary" delay={0} />
           <StatCard title="Department Students" value={hodOverview.total_students} icon={GraduationCap} color="info" delay={0.08} />
-          <StatCard title="Sections" value={hodOverview.total_sections} icon={Building2} color="success" delay={0.16} />
+          <StatCard title="Divisions" value={hodOverview.total_divisions ?? 0} icon={Building2} color="success" delay={0.16} />
           <StatCard title="Pending Leaves" value={hodOverview.pending_leaves} icon={FileText} color={hodOverview.pending_leaves > 0 ? 'warning' : 'success'} delay={0.24} />
         </div>
       )}

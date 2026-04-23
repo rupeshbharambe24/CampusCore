@@ -41,6 +41,8 @@ class StudentProfile(BaseModel):
     date_of_birth: str | None = None
     gender: str | None = None
     category: str | None = None
+    is_detained: bool = False
+    is_graduated: bool = False
 
     model_config = {"from_attributes": True}
 
