@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "pnpm --filter @campuscore/web dev",
-    "dev:api": "pnpm --dir apps/api run dev",
+    "dev:api": "cd apps/api && uv run uvicorn app.main:app --reload --port 8000",
     "build": "pnpm --filter @campuscore/web build",
     "lint": "pnpm -r --parallel --if-present lint",
     "typecheck": "pnpm -r --parallel --if-present typecheck",
